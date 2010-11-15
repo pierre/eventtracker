@@ -1,0 +1,88 @@
+/*
+ * Copyright 2010 Ning, Inc.
+ *
+ * Ning licenses this file to you under the Apache License, version 2.0
+ * (the "License"); you may not use this file except in compliance with the
+ * License.  You may obtain a copy of the License at:
+ *
+ *    http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.  See the
+ * License for the specific language governing permissions and limitations
+ * under the License.
+ */
+
+package com.ning.metrics.eventtracker;
+
+import com.google.inject.AbstractModule;
+import com.google.inject.Singleton;
+import com.ning.metrics.serialization.writer.DiskSpoolEventWriter;
+import com.ning.metrics.serialization.writer.EventWriter;
+import org.apache.commons.httpclient.HttpClient;
+import org.apache.log4j.Logger;
+import org.skife.config.ConfigurationObjectFactory;
+
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
+
+/**
+ * Wires all pieces related to talking to the Collector core.
+ * See http://github.com/pierre/collector
+ * <p/>
+ * Note that Guice injection is optional, you can directly instantiate a CollectorController
+ * via the factories.
+ *
+ * @see com.ning.metrics.eventtracker.ScribeCollectorFactory
+ */
+public class CollectorControllerModule extends AbstractModule
+{
+    private static final Logger log = Logger.getLogger(CollectorControllerModule.class);
+
+    public static enum Type
+    {
+        SCRIBE,
+        COLLECTOR,
+        NO_LOGGING
+    }
+
+    protected Type type;
+
+    @Override
+    protected void configure()
+    {
+        final CollectorConfig collectorConfig = new ConfigurationObjectFactory(System.getProperties()).build(CollectorConfig.class);
+        bind(CollectorConfig.class).toInstance(collectorConfig);
+
+        type = Type.valueOf(collectorConfig.getType());
+
+        switch (type) {
+            case COLLECTOR:
+                bind(HttpClient.class)
+                    .to(HttpClient.class) // despite what Idea thinks, the "to(HttpClient.class)" is necessary
+                    .in(Singleton.class);
+                bind(CollectorUriBuilder.class).to(SimpleUriBuilder.class).in(Singleton.class);
+                bind(EventSender.class).to(HttpSender.class);
+                log.info("Enabled Collector Event Logging");
+                break;
+            case SCRIBE:
+                bind(ScribeSenderProvider.class).in(new FixedManagedJmxExportScope(log, "eventtracker:name=ScribeSender"));
+                bind(EventSender.class).toProvider(ScribeSenderProvider.class);
+                log.info("Enabled Scribe Event Logging");
+                break;
+            case NO_LOGGING:
+                bind(EventSender.class).toInstance(new NoLoggingSender());
+                log.info("Disabled Event Logging");
+                break;
+            default:
+                throw new IllegalStateException("Unknown type " + type);
+        }
+
+        bind(ScheduledExecutorService.class).toInstance(new ScheduledThreadPoolExecutor(1, Executors.defaultThreadFactory()));
+        bind(CollectorController.class).in(new FixedManagedJmxExportScope(log, "eventtracker:name=CollectorController"));
+        bind(DiskSpoolEventWriter.class).toProvider(DiskSpoolEventWriterProvider.class);
+        bind(EventWriter.class).toProvider(ThresholdEventWriterProvider.class);
+    }
+}
