@@ -41,7 +41,7 @@ abstract class CollectorConfig
      * @return the maximum number of events per file
      * @see com.ning.metrics.serialization.writer.ThresholdEventWriter
      */
-    @Config(value = "collector.diskspool.flush-event-queue-size")
+    @Config(value = "eventtracker.diskspool.flush-event-queue-size")
     public long getFlushEventQueueSize()
     {
         return 10000;
@@ -53,7 +53,7 @@ abstract class CollectorConfig
      * @return maxixmum age of events in seconds in the temporary spool queue
      * @see com.ning.metrics.serialization.writer.ThresholdEventWriter
      */
-    @Config(value = "collector.diskspool.refresh-delay-seconds")
+    @Config(value = "eventtracker.diskspool.refresh-delay-seconds")
     public int getRefreshDelayInSeconds()
     {
         return 60;
