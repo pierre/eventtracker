@@ -78,6 +78,6 @@ public class DiskSpoolEventWriterProvider implements Provider<DiskSpoolEventWrit
             {
                 // no-op
             }
-        }, config.getSpoolDirectoryName(), config.isFlushEnabled(), config.getFlushIntervalInSeconds(), executor, SyncType.valueOf(config.getSyncType()), config.getRateWindowSizeMinutes());
+        }, config.getSpoolDirectoryName(), config.isFlushEnabled(), config.getFlushIntervalInSeconds(), executor, SyncType.valueOf(config.getSyncType()), config.getSyncBatchSize(), config.getRateWindowSizeMinutes());
     }
 }

@@ -117,7 +117,7 @@ public class ScribeSender implements EventSender
             messagesSuccessfullySentSinceLastReconnection.addAndGet(list.size());
 
             // For load balancing capabilities, we don't want to make sticky connections to Scribe.
-            // After a certain threshold,  for a refresh of the connection.
+            // After a certain threshold, force a refresh of the connection.
             if (messagesSuccessfullySentSinceLastReconnection.get() > messagesToSendBeforeReconnecting) {
                 log.info("Recycling connection with Scribe");
                 messagesSuccessfullySentSinceLastReconnection.set(0);

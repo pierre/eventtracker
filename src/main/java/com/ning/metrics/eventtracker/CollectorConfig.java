@@ -86,7 +86,7 @@ abstract class CollectorConfig
      *
      * @return delay between flushes to the remote server
      */
-    @Config(value = "eventtracker.diskspool.refresh-delay-seconds")
+    @Config(value = "eventtracker.diskspool.flush-interval-seconds")
     public int getFlushIntervalInSeconds()
     {
         return 60;
@@ -101,6 +101,18 @@ abstract class CollectorConfig
     public String getSyncType()
     {
         return "NONE";
+    }
+
+    /**
+     * Batch size to use for the outputter.
+     * A flush or sync is triggered after this amount of events have been written.
+     *
+     * @return the batch size for writes
+     */
+    @Config(value = "eventtracker.diskspool.batch-size")
+    public int getSyncBatchSize()
+    {
+        return 50;
     }
 
     @Config(value = "eventtracker.event-end-point.rate-window-size-minutes")

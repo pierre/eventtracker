@@ -56,13 +56,13 @@
             <artifactId>commons-httpclient</artifactId>
             <version>3.1</version>
             <optional>true</optional>
-            <!-- Scribe is the common usecase -->
         </dependency>
         <dependency>
             <groupId>commons-logging</groupId>
             <artifactId>commons-logging</artifactId>
             <version>1.1.1</version>
         </dependency>
+        <!-- Needed for the Facebook service interface -->
         <dependency>
             <groupId>com.facebook.scribe</groupId>
             <artifactId>scribe</artifactId>
@@ -78,17 +78,17 @@
         <dependency>
             <groupId>com.ning</groupId>
             <artifactId>metrics.serialization-common</artifactId>
-            <version>1.0.2</version>
+            <version>1.0.3-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>com.ning</groupId>
             <artifactId>metrics.serialization-thrift</artifactId>
-            <version>1.0.2</version>
+            <version>1.0.3-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>com.ning</groupId>
             <artifactId>metrics.serialization-writer</artifactId>
-            <version>1.0.2</version>
+            <version>1.0.3-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>joda-time</groupId>

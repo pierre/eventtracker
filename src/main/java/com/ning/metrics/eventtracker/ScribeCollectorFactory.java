@@ -61,13 +61,14 @@ public class ScribeCollectorFactory
         boolean isFlushEnabled,
         long flushIntervalInSeconds,
         String syncType,
+        int syncBatchSize,
         int rateWindowSizeMinutes,
         long flushEventQueueSize,
         long refreshDelayInSeconds
     ) throws IOException
     {
         if (singletonController == null) {
-            singletonController = new ScribeCollectorFactory(scribeHost, scribePort, scribeRefreshRate, spoolDirectoryName, isFlushEnabled, flushIntervalInSeconds, syncType, rateWindowSizeMinutes, flushEventQueueSize, refreshDelayInSeconds).get();
+            singletonController = new ScribeCollectorFactory(scribeHost, scribePort, scribeRefreshRate, spoolDirectoryName, isFlushEnabled, flushIntervalInSeconds, syncType, syncBatchSize, rateWindowSizeMinutes, flushEventQueueSize, refreshDelayInSeconds).get();
         }
 
         return singletonController;
@@ -81,6 +82,7 @@ public class ScribeCollectorFactory
         boolean isFlushEnabled,
         long flushIntervalInSeconds,
         String syncType,
+        int syncBatchSize,
         int rateWindowSizeMinutes,
         long flushEventQueueSize,
         long refreshDelayInSeconds
@@ -108,7 +110,7 @@ public class ScribeCollectorFactory
             {
                 // no-op
             }
-        }, spoolDirectoryName, isFlushEnabled, flushIntervalInSeconds, new ScheduledThreadPoolExecutor(1, Executors.defaultThreadFactory()), SyncType.valueOf(syncType), rateWindowSizeMinutes);
+        }, spoolDirectoryName, isFlushEnabled, flushIntervalInSeconds, new ScheduledThreadPoolExecutor(1, Executors.defaultThreadFactory()), SyncType.valueOf(syncType), syncBatchSize, rateWindowSizeMinutes);
         ThresholdEventWriter thresholdEventWriter = new ThresholdEventWriter(eventWriter, flushEventQueueSize, refreshDelayInSeconds);
 
         controller = new CollectorController(thresholdEventWriter);
