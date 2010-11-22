@@ -101,12 +101,19 @@ public class ScribeSender implements EventSender
         List<LogEntry> list = new ArrayList<LogEntry>(1);
         // TODO: update Scribe to pass a Thrift directly instead of serializing it
 
-        // 64-bit encode the serialized object
-        ByteArrayOutputStream out = new ByteArrayOutputStream();
-        event.writeExternal(new ObjectOutputStream(out));
+        // Has the sender specified how to send the data?
+        byte[] payload = event.getSerializedEvent();
 
-        byte[] payload = out.toByteArray();
-        payload = new Base64().encode(payload);
+        // Nope, default to ObjectOutputStream
+        if (payload == null) {
+            ByteArrayOutputStream out = new ByteArrayOutputStream();
+            event.writeExternal(new ObjectOutputStream(out));
+            payload = out.toByteArray();
+
+            // 64-bit encode the serialized object
+            payload = new Base64().encode(payload);
+        }
+
 
         String scribePayload = new String(payload, Charset.forName("UTF-8"));
         list.add(new LogEntry(event.getName(), String.format("%s:%s", event.getEventDateTime().getMillis(), scribePayload)));
