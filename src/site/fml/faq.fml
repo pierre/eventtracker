@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<faqs xmlns="http://maven.apache.org/FML/1.0.1"
+      xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xsi:schemaLocation="http://maven.apache.org/FML/1.0.1 http://maven.apache.org/xsd/fml-1.0.1.xsd"
+      title="Frequently Asked Questions"
+      toplink="false">
+
+    <part id="general">
+        <title>General</title>
+
+        <faq id="how-use-it">
+            <question>
+                How do I use it?
+            </question>
+            <answer>
+                <p>The eventtracker library is synced to<a
+                        href="http://repo1.maven.org/maven2/com/ning/metrics.eventtracker/"
+                        target="_blank">Maven Central</a>.
+                    Simply add the dependency to your pom.xml:
+                </p>
+
+                <source><![CDATA[
+    <dependency>
+        <groupId>com.ning</groupId>
+        <artifactId>metrics.eventtracker</artifactId>
+        <version>3.0.0</version>
+    </dependency>]]></source>
+
+                <p>The library offers a simple method to send events. Here is a complete working example to send one
+                    Thrift
+                    event (we assume myShinyEvent is a Thrift object):
+                </p>
+
+                <source><![CDATA[
+        ThriftEnvelopeEvent eventToSend = ThriftToThriftEnvelopeEvent.extractEvent("MyShinyEvent", myShinyEvent);
+
+        // See the Javadocs for fine-tuning of the parameters
+        // There is also a Guice module which uses config-magic for parameters injection:
+        //        Injector injector = Guice.createInjector(new CollectorControllerModule());
+        //        CollectorController controller = injector.getInstance(CollectorController.class);
+        CollectorController controller = ScribeCollectorFactory.createScribeController(
+            "collector-vip.company.com",
+            7911,
+            10,
+            "/tmp/eventtracker",
+            true,
+            30,
+            "NONE",
+            1,
+            1,
+            100,
+            10
+        );
+
+        controller.offerEvent(eventToSend);
+
+        // Optional, see below
+        controller.commit();
+        controller.flush();]]></source>
+
+                <p>You can send any type of Event (no necessarily Thrift) via the library. See the serialization library
+                    website for an introduction of the Event concept.
+                </p>
+            </answer>
+        </faq>
+        <faq id="how-it-works">
+            <question>
+                How does it work?
+            </question>
+            <answer>
+                <p>Each event accepted via the offerEvent(Event) API are directly serialized to disk using the
+                    com.ning:metrics.serialization-writer library. Events are then de-serialized and sent to the
+                    collector periodically and/or after a certain number of events have been offered.
+                </p>
+                <p>The library supports all Collector API: HTTP based and Scribe.</p>
+                <p>The CollectorController class provides the commit() call to force a promotion from the temporary
+                    queue of events
+                    to the final queue: only events in the final queue are sent (a separate thread wakes up periodically
+                    to see if there is anything to send). The commit() call bypasses the promotion rules mentioned
+                    above.
+                </p>
+                <p>One can force a flush to the final queue by calling flush() on the controller object. This forces
+                    all events in the queue to be sent remotely.
+                </p>
+                <p>Serialization to disk is done using the Java Serialization mechanisms (ObjectOutputStream to file).
+                    The whole Event object is written to disk. This is not configurable.
+                </p>
+                <p>For Scribe, final serialization on the wire is done via Java Serialization by default
+                    (ObjectOutputStream).
+                    The whole event is not serialized by default, but uses the writeExternal method.
+                    You can override this behavior by implementing getSerializedBytes() in your Event. These bytes are
+                    sent on the wire. This is useful for instance if you want to send plain Thrift (collector support
+                    Base64-encoded thrift serialization).
+                </p>
+            </answer>
+        </faq>
+    </part>
+</faqs>

@@ -1,0 +1,7 @@
+Welcome to the eventtracker library
+
+* Overview
+
+    The eventtracker library is a Java library to send event to the {{{/collector}Collector}}.
+    See the {{{/eventtracker/faq.html}FAQ}} to get started.
+
