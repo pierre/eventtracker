@@ -70,11 +70,17 @@
             </question>
             <answer>
                 <p>The easiest way is to use Guice injection of parameters via config-magic. See the
-                <a href="/dwarf/eventtracker/apidocs/com/ning/metrics/eventtracker/CollectorConfig.html"
-                target="_blank">CollectorConfig Javadoc</a> for system properties.</p>
+                    <a href="/dwarf/eventtracker/apidocs/src-html/com/ning/metrics/eventtracker/CollectorConfig.html"
+                       target="_blank">CollectorConfig source
+                    </a>
+                    for system properties
+                    (<a href="/dwarf/eventtracker/apidocs/com/ning/metrics/eventtracker/ScribeCollectorFactory.html"
+                        target="_blank">Javadoc link</a>).
+                </p>
                 <p>Alternatively, we provide a factory (Scribe only for now). See the
-                <a href="/dwarf/eventtracker/apidocs/com/ning/metrics/eventtracker/ScribeCollectorFactory.html"
-                target="_blank">ScribeCollectorFactory Javadoc</a>.</p>
+                    <a href="/dwarf/eventtracker/apidocs/com/ning/metrics/eventtracker/ScribeCollectorFactory.html"
+                       target="_blank">ScribeCollectorFactory Javadoc</a>.
+                </p>
             </answer>
         </faq>
         <faq id="how-it-works">
@@ -82,8 +88,14 @@
                 How does it work?
             </question>
             <answer>
-                <p>Each event accepted via the offerEvent(Event) API are directly serialized to disk using the
-                    com.ning:metrics.serialization-writer library. Events are then de-serialized and sent to the
+                <p>Each event accepted via the
+                    <a href="/dwarf/eventtracker/apidocs/com/ning/metrics/eventtracker/CollectorController.html#offerEvent(com.ning.metrics.serialization.event.Event"
+                       target="_blank">offerEvent(Event)
+                    </a>
+                    API are directly serialized to disk using the
+                    <a href="/dwarf/serialization"
+                       target="_blank">com.ning:metrics.serialization-writer library</a>.
+                    Events are then de-serialized and sent to the
                     collector periodically and/or after a certain number of events have been offered.
                 </p>
                 <p>The library supports all Collector API: HTTP based and Scribe.</p>

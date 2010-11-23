@@ -10,7 +10,7 @@
 
         <menu name="Dwarf">
             <item name="Dwarf project" href="http://pierre.github.com/dwarf"/>
-            <item name="FAQ" href="/dwarf/eventtracker/faq.html"/>
+            <item name="FAQ" href="/faq.html"/>
         </menu>
 
         <menu ref="modules"/>
