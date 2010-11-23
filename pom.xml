@@ -268,6 +268,9 @@
                         <link>http://download.oracle.com/javase/6/docs/api/</link>
                     </links>
                     <linksource>true</linksource>
+                    <!-- It is useful in this case to produce all Javadocs for people trying to understand the design.
+                     Besides, we really want the Javadoc for CollectorConfig -->
+                    <show>all</show>
                 </configuration>
                 <reportSets>
                     <reportSet>

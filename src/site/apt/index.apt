@@ -2,6 +2,6 @@ Welcome to the eventtracker library
 
 * Overview
 
-    The eventtracker library is a Java library to send event to the {{{/collector}Collector}}.
-    See the {{{/eventtracker/faq.html}FAQ}} to get started.
+    The eventtracker library is a Java library to send events to the {{{/dwarf/collector}Collector}}.
+    See the {{{/dwarf/eventtracker/faq.html}FAQ}} to get started.
 

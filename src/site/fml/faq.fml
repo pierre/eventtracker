@@ -13,9 +13,10 @@
                 How do I use it?
             </question>
             <answer>
-                <p>The eventtracker library is synced to<a
-                        href="http://repo1.maven.org/maven2/com/ning/metrics.eventtracker/"
-                        target="_blank">Maven Central</a>.
+                <p>The eventtracker library is synced to
+                    <a
+                            href="http://repo1.maven.org/maven2/com/ning/metrics.eventtracker/"
+                            target="_blank">Maven Central</a>.
                     Simply add the dependency to your pom.xml:
                 </p>
 
@@ -61,6 +62,19 @@
                 <p>You can send any type of Event (no necessarily Thrift) via the library. See the serialization library
                     website for an introduction of the Event concept.
                 </p>
+            </answer>
+        </faq>
+        <faq id="how-do-I-configure-it">
+            <question>
+                How do I configure it?
+            </question>
+            <answer>
+                <p>The easiest way is to use Guice injection of parameters via config-magic. See the
+                <a href="/dwarf/eventtracker/apidocs/com/ning/metrics/eventtracker/CollectorConfig.html"
+                target="_blank">CollectorConfig Javadoc</a> for system properties.</p>
+                <p>Alternatively, we provide a factory (Scribe only for now). See the
+                <a href="/dwarf/eventtracker/apidocs/com/ning/metrics/eventtracker/ScribeCollectorFactory.html"
+                target="_blank">ScribeCollectorFactory Javadoc</a>.</p>
             </answer>
         </faq>
         <faq id="how-it-works">
