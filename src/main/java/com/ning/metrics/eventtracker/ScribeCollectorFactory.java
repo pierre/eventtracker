@@ -89,7 +89,7 @@ public class ScribeCollectorFactory
     ) throws IOException
     {
         eventSender = new ScribeSender(new ScribeClientImpl(scribeHost, scribePort), scribeRefreshRate);
-        FixedManagedJmxExport.export("eventtracker:name=ScribeSender", eventSender);
+        FixedManagedJmxExport.export("com.ning.metrics.eventtracker:name=ScribeSender", eventSender);
         eventSender.createConnection();
 
         DiskSpoolEventWriter eventWriter = new DiskSpoolEventWriter(new EventHandler()
