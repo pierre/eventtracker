@@ -30,7 +30,7 @@ public class ThresholdEventWriterProvider implements Provider<ThresholdEventWrit
     @Inject
     public ThresholdEventWriterProvider(
         DiskSpoolEventWriter eventWriter,
-        CollectorConfig config
+        EventTrackerConfig config
     )
     {
         this.eventWriter = eventWriter;

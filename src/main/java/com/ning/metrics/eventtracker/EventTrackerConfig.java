@@ -18,7 +18,7 @@ package com.ning.metrics.eventtracker;
 
 import org.skife.config.Config;
 
-abstract class CollectorConfig
+abstract class EventTrackerConfig
 {
     /**
      * Configure the type of the eventtracker. Valid values are SCRIBE, COLLECTOR, DUMMY

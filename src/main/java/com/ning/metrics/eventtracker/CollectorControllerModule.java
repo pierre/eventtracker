@@ -53,10 +53,10 @@ public class CollectorControllerModule extends AbstractModule
     @Override
     protected void configure()
     {
-        final CollectorConfig collectorConfig = new ConfigurationObjectFactory(System.getProperties()).build(CollectorConfig.class);
-        bind(CollectorConfig.class).toInstance(collectorConfig);
+        final EventTrackerConfig eventTrackerConfig = new ConfigurationObjectFactory(System.getProperties()).build(EventTrackerConfig.class);
+        bind(EventTrackerConfig.class).toInstance(eventTrackerConfig);
 
-        type = Type.valueOf(collectorConfig.getType());
+        type = Type.valueOf(eventTrackerConfig.getType());
 
         switch (type) {
             case COLLECTOR:

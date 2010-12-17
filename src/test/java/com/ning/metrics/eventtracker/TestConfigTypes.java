@@ -59,29 +59,29 @@ public class TestConfigTypes
 
     public void testEmpty()
     {
-        final CollectorConfig collectorConfig = new ConfigurationObjectFactory(p).build(CollectorConfig.class);
-        Assert.assertEquals(Type.valueOf(collectorConfig.getType()), Type.COLLECTOR);
+        final EventTrackerConfig eventTrackerConfig = new ConfigurationObjectFactory(p).build(EventTrackerConfig.class);
+        Assert.assertEquals(Type.valueOf(eventTrackerConfig.getType()), Type.COLLECTOR);
     }
 
     public void testCollector()
     {
         p.put("eventtracker.type", "COLLECTOR");
 
-        final CollectorConfig collectorConfig = new ConfigurationObjectFactory(p).build(CollectorConfig.class);
-        Assert.assertEquals(Type.valueOf(collectorConfig.getType()), Type.COLLECTOR);
+        final EventTrackerConfig eventTrackerConfig = new ConfigurationObjectFactory(p).build(EventTrackerConfig.class);
+        Assert.assertEquals(Type.valueOf(eventTrackerConfig.getType()), Type.COLLECTOR);
     }
 
     public void testScribe()
     {
         p.put("eventtracker.type", "SCRIBE");
-        final CollectorConfig collectorConfig = new ConfigurationObjectFactory(p).build(CollectorConfig.class);
-        Assert.assertEquals(Type.valueOf(collectorConfig.getType()), Type.SCRIBE);
+        final EventTrackerConfig eventTrackerConfig = new ConfigurationObjectFactory(p).build(EventTrackerConfig.class);
+        Assert.assertEquals(Type.valueOf(eventTrackerConfig.getType()), Type.SCRIBE);
     }
 
     public void testNoLogging()
     {
         p.put("eventtracker.type", "NO_LOGGING");
-        final CollectorConfig collectorConfig = new ConfigurationObjectFactory(p).build(CollectorConfig.class);
-        Assert.assertEquals(Type.valueOf(collectorConfig.getType()), Type.NO_LOGGING);
+        final EventTrackerConfig eventTrackerConfig = new ConfigurationObjectFactory(p).build(EventTrackerConfig.class);
+        Assert.assertEquals(Type.valueOf(eventTrackerConfig.getType()), Type.NO_LOGGING);
     }
 }

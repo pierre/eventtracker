@@ -26,10 +26,10 @@ import org.apache.thrift.transport.TTransportException;
  */
 class ScribeSenderProvider implements Provider<ScribeSender>
 {
-    private final CollectorConfig config;
+    private final EventTrackerConfig config;
 
     @Inject
-    public ScribeSenderProvider(CollectorConfig config)
+    public ScribeSenderProvider(EventTrackerConfig config)
     {
         this.config = config;
     }

@@ -59,7 +59,7 @@ public class DiskSpoolEventWriterProvider implements Provider<DiskSpoolEventWrit
     @Override
     public DiskSpoolEventWriter get()
     {
-        CollectorConfig config = injector.getInstance(CollectorConfig.class);
+        EventTrackerConfig config = injector.getInstance(EventTrackerConfig.class);
         return new DiskSpoolEventWriter(new EventHandler()
         {
             @Override
