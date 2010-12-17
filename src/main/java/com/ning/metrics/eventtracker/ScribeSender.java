@@ -31,6 +31,11 @@ import java.io.ObjectOutputStream;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
@@ -49,10 +54,28 @@ public class ScribeSender implements EventSender
     private final AtomicInteger messagesSuccessfullySentSinceLastReconnection = new AtomicInteger(0);
     private int messagesToSendBeforeReconnecting = 0;
 
-    public ScribeSender(ScribeClient scribeClient, int messagesToSendBeforeReconnecting)
+    private final AtomicBoolean sleeping = new AtomicBoolean(true);
+
+    public ScribeSender(ScribeClient scribeClient, int messagesToSendBeforeReconnecting, int maxIdleTimeInMinutes)
     {
         this.scribeClient = scribeClient;
         this.messagesToSendBeforeReconnecting = messagesToSendBeforeReconnecting;
+
+        // Setup a watchdog for the Scribe connection. We don't want to keep it open forever. For instance, SLB VIP
+        // may trigger a RST if idle more than a few minutes.
+        final ScheduledExecutorService executor = new ScheduledThreadPoolExecutor(1, Executors.defaultThreadFactory());
+        executor.scheduleAtFixedRate(new Runnable()
+        {
+            @Override
+            public void run()
+            {
+                if (sleeping.get()) {
+                    log.info("Idle connection to Scribe, re-opening it");
+                    createConnection();
+                }
+                sleeping.set(true);
+            }
+        }, maxIdleTimeInMinutes, maxIdleTimeInMinutes, TimeUnit.MINUTES);
     }
 
     /**
@@ -95,6 +118,9 @@ public class ScribeSender implements EventSender
             log.warn("Scribe client has not been set up correctly.");
             return false;
         }
+
+        // Tell the watchdog that we are doing something
+        sleeping.set(false);
 
         ResultCode res;
         // TODO: offer batch API?, see drainEvents

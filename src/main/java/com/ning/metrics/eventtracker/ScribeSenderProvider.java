@@ -55,6 +55,6 @@ class ScribeSenderProvider implements Provider<ScribeSender>
             throw new ProvisionException("Unable to create Scribe client", e);
         }
 
-        return new ScribeSender(scribeClient, config.getMessagesToSendBeforeReconnectingToScribe());
+        return new ScribeSender(scribeClient, config.getScribeRefreshRate(), config.getScribeMaxIdleTimeInMinutes());
     }
 }

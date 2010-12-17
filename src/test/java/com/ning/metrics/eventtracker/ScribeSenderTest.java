@@ -20,6 +20,7 @@ import com.ning.metrics.serialization.event.Event;
 import com.ning.metrics.serialization.event.ThriftToThriftEnvelopeEvent;
 import org.apache.thrift.transport.TTransportException;
 import org.joda.time.DateTime;
+import org.testng.Assert;
 import org.testng.annotations.AfterTest;
 import org.testng.annotations.BeforeTest;
 import org.testng.annotations.Test;
@@ -41,6 +42,7 @@ public class ScribeSenderTest
     {
         private String host;
         private int port;
+        private boolean open = false;
 
         public int getMessagesSent()
         {
@@ -57,7 +59,7 @@ public class ScribeSenderTest
 
         public void openLogger() throws TTransportException
         {
-            // no-op
+            open = true;
         }
 
         public ResultCode log(List<LogEntry> messages)
@@ -68,7 +70,12 @@ public class ScribeSenderTest
 
         public void closeLogger()
         {
-            // no-op
+            open = false;
+        }
+
+        public boolean isOpen()
+        {
+            return open;
         }
     }
 
@@ -76,7 +83,7 @@ public class ScribeSenderTest
     public void setUp()
     {
         this.scribeClient = new ScribeMockClient("localhost", 1242);
-        this.scribeSender = new ScribeSender(scribeClient, 1000);
+        this.scribeSender = new ScribeSender(scribeClient, 1000, 1);
         byte[] data = {1, 2, 3, 4, 5};
         this.thriftEvent = ThriftToThriftEnvelopeEvent.extractEvent("thrift", new DateTime(), new Click("thrift", 12, new String(data)));
     }
@@ -90,12 +97,22 @@ public class ScribeSenderTest
     @Test(groups = "fast")
     public void testSendNullScribeSender() throws Exception
     {
-        assertFalse(new ScribeSender(null, 0).send(thriftEvent));
+        assertFalse(new ScribeSender(null, 0, 4).send(thriftEvent));
     }
 
     @Test(groups = "fast")
     public void testSend() throws Exception
     {
         assertTrue(scribeSender.send(thriftEvent));
+    }
+
+    @Test(groups = "slow", enabled = false)
+    public void testWatchDog() throws Exception
+    {
+        // No message has been sent, so the logger hasn't been opened yet
+        Assert.assertFalse(scribeClient.isOpen());
+        Thread.sleep(60000);
+        // The watchdog must have waken up (after one minute) and re-opened the connection
+        Assert.assertTrue(scribeClient.isOpen());
     }
 }

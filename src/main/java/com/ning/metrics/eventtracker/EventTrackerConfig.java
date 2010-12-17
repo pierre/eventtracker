@@ -18,10 +18,29 @@ package com.ning.metrics.eventtracker;
 
 import org.skife.config.Config;
 
-abstract class EventTrackerConfig
+public class EventTrackerConfig
 {
+    private String type = "COLLECTOR";
+    private long flushEventQueueSize = 10000;
+    private int refreshDelayInSeconds = 60;
+    private String spoolDirectoryName = "/tmp/eventtracker/diskspool";
+    private boolean flushEnabled = true;
+    private int flushIntervalInSeconds = 60;
+    private String syncType = "NONE";
+    private int syncBatchSize = 50;
+    private int rateWindowSizeMinutes = 5;
+    private int scribePort = 1463;
+    private String scribeHost = "127.0.0.1";
+    private int scribeRefreshRate = 1000000;
+    private int scribeMaxIdleTimeInMinutes = 4;
+
     /**
-     * Configure the type of the eventtracker. Valid values are SCRIBE, COLLECTOR, DUMMY
+     * Configure the type of the eventtracker. Valid values are:
+     * <ul>
+     * <li>SCRIBE: Thrift protocol
+     * <li>COLLECTOR: HTTP protocol
+     * <li>DUMMY: no-op
+     * </ul>
      *
      * @return the type of eventtracker to use
      */
@@ -29,7 +48,7 @@ abstract class EventTrackerConfig
     public String getType()
     {
         // config-magic doesn't support enums :(
-        return "COLLECTOR";
+        return type;
     }
 
     //------------------- Spooling -------------------//
@@ -44,7 +63,7 @@ abstract class EventTrackerConfig
     @Config(value = "eventtracker.diskspool.flush-event-queue-size")
     public long getFlushEventQueueSize()
     {
-        return 10000;
+        return flushEventQueueSize;
     }
 
     /**
@@ -56,7 +75,7 @@ abstract class EventTrackerConfig
     @Config(value = "eventtracker.diskspool.refresh-delay-seconds")
     public int getRefreshDelayInSeconds()
     {
-        return 60;
+        return refreshDelayInSeconds;
     }
 
     /**
@@ -67,7 +86,7 @@ abstract class EventTrackerConfig
     @Config(value = "eventtracker.diskspool.path")
     public String getSpoolDirectoryName()
     {
-        return "/tmp/eventtracker/diskspool";
+        return spoolDirectoryName;
     }
 
     /**
@@ -78,7 +97,7 @@ abstract class EventTrackerConfig
     @Config(value = "eventtracker.diskspool.enabled")
     public boolean isFlushEnabled()
     {
-        return true;
+        return flushEnabled;
     }
 
     /**
@@ -89,7 +108,7 @@ abstract class EventTrackerConfig
     @Config(value = "eventtracker.diskspool.flush-interval-seconds")
     public int getFlushIntervalInSeconds()
     {
-        return 60;
+        return flushIntervalInSeconds;
     }
 
     /**
@@ -100,7 +119,7 @@ abstract class EventTrackerConfig
     @Config(value = "eventtracker.diskspool.synctype")
     public String getSyncType()
     {
-        return "NONE";
+        return syncType;
     }
 
     /**
@@ -112,13 +131,13 @@ abstract class EventTrackerConfig
     @Config(value = "eventtracker.diskspool.batch-size")
     public int getSyncBatchSize()
     {
-        return 50;
+        return syncBatchSize;
     }
 
     @Config(value = "eventtracker.event-end-point.rate-window-size-minutes")
     public int getRateWindowSizeMinutes()
     {
-        return 5;
+        return rateWindowSizeMinutes;
     }
 
     //------------------- Scribe Sender -------------------//
@@ -131,7 +150,7 @@ abstract class EventTrackerConfig
     @Config(value = "eventtracker.scribe.port")
     public int getScribePort()
     {
-        return 1463;
+        return scribePort;
     }
 
     /**
@@ -142,17 +161,95 @@ abstract class EventTrackerConfig
     @Config(value = "eventtracker.scribe.host")
     public String getScribeHost()
     {
-        return "127.0.0.1";
+        return scribeHost;
     }
 
     /**
      * Number of messages to send to Scribe before refreshing the connection
+     * This is for load balancing purposes.
      *
      * @return the threshold before reconnecting to Scribe
      */
     @Config(value = "eventtracker.scribe.refresh_rate")
-    public int getMessagesToSendBeforeReconnectingToScribe()
+    public int getScribeRefreshRate()
     {
-        return 1000000; // 1 Million
+        return scribeRefreshRate; // 1 Million
+    }
+
+    /**
+     * Number of minutes allowed for the connection to be idle before re-opening it
+     * We don't want to keep it open forever. For instance, SLB VIP may trigger a RST if idle more than a few minutes.
+     *
+     * @return the number of minutes before reconnecting to Scribe
+     */
+    @Config(value = "eventtracker.scribe.max-idle-minutes")
+    public int getScribeMaxIdleTimeInMinutes()
+    {
+        return scribeMaxIdleTimeInMinutes;
+    }
+
+    public void setFlushEnabled(boolean flushEnabled)
+    {
+        this.flushEnabled = flushEnabled;
+    }
+
+    public void setFlushEventQueueSize(long flushEventQueueSize)
+    {
+        this.flushEventQueueSize = flushEventQueueSize;
+    }
+
+    public void setFlushIntervalInSeconds(int flushIntervalInSeconds)
+    {
+        this.flushIntervalInSeconds = flushIntervalInSeconds;
+    }
+
+    public void setRateWindowSizeMinutes(int rateWindowSizeMinutes)
+    {
+        this.rateWindowSizeMinutes = rateWindowSizeMinutes;
+    }
+
+    public void setRefreshDelayInSeconds(int refreshDelayInSeconds)
+    {
+        this.refreshDelayInSeconds = refreshDelayInSeconds;
+    }
+
+    public void setScribeHost(String scribeHost)
+    {
+        this.scribeHost = scribeHost;
+    }
+
+    public void setScribePort(int scribePort)
+    {
+        this.scribePort = scribePort;
+    }
+
+    public void setScribeRefreshRate(int scribeRefreshRate)
+    {
+        this.scribeRefreshRate = scribeRefreshRate;
+    }
+
+    public void setSpoolDirectoryName(String spoolDirectoryName)
+    {
+        this.spoolDirectoryName = spoolDirectoryName;
+    }
+
+    public void setSyncBatchSize(int syncBatchSize)
+    {
+        this.syncBatchSize = syncBatchSize;
+    }
+
+    public void setSyncType(String syncType)
+    {
+        this.syncType = syncType;
+    }
+
+    public void setType(String type)
+    {
+        this.type = type;
+    }
+
+    public void setScribeMaxIdleTimeInMinutes(int scribeMaxIdleTimeInMinutes)
+    {
+        this.scribeMaxIdleTimeInMinutes = scribeMaxIdleTimeInMinutes;
     }
 }
