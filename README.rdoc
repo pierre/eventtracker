@@ -11,7 +11,7 @@ The eventtracker library is synced to Maven Central. Simply add the dependency t
     <dependency>
         <groupId>com.ning</groupId>
         <artifactId>metrics.eventtracker</artifactId>
-        <version>3.0.0</version>
+        <version>3.1.0</version>
     </dependency>
 
 The library offers a simple method to send events. Here is a complete working example to send one Thrift event (we assume myShinyEvent is a Thrift object):
@@ -22,19 +22,10 @@ The library offers a simple method to send events. Here is a complete working ex
         // There is also a Guice module which uses config-magic for parameters injection:
         //        Injector injector = Guice.createInjector(new CollectorControllerModule());
         //        CollectorController controller = injector.getInstance(CollectorController.class);
-        CollectorController controller = ScribeCollectorFactory.createScribeController(
-            "collector-vip.company.com",
-            7911,
-            10,
-            "/tmp/eventtracker",
-            true,
-            30,
-            "NONE",
-            1,
-            1,
-            100,
-            10
-        );
+        EventTrackerConfig eventTrackerConfig = new EventTrackerConfig();
+        eventTrackerConfig.setScribeHost("collector-vip.company.com");
+
+        CollectorController controller = ScribeCollectorFactory.createScribeController(eventTrackerConfig);
 
         controller.offerEvent(eventToSend);
 
