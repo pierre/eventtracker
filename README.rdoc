@@ -1,6 +1,6 @@
 = Eventtracker, a Java library for the Dwarf Collector
 
-The eventtracker library is a Java library to send events to the Collector (http://pierre.github.com/collector).
+The eventtracker library is a Java library to send events to the Collector (http://github.com/pierre/collector).
 
 Please refer to the serialization library FAQ for an overview of the Event concept: http://pierre.github.com/dwarf/serialization/faq.html
 
