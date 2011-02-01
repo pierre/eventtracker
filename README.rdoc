@@ -37,9 +37,9 @@ You can send any type of Event (not necessarily Thrift) via the library (see bel
 
 = How does it work?
 
-Each event accepted via the offerEvent(Event) API are directly serialized to disk using the com.ning:metrics.serialization-writer library for persistency. Events are then de-serialized and sent to the collector periodically and/or after a certain number of events have been offered.
+Each event accepted via the offerEvent(Event) API is directly serialized to disk using the com.ning:metrics.serialization-writer library for persistency. Events are then de-serialized and sent to the collector periodically and/or after a certain number of events have been offered.
 
-The library supports all Collector API: HTTP based and Scribe (Thrift).
+The library supports all Collector APIs: HTTP based and Scribe (Thrift).
 
 The CollectorController class provides the commit() call to force a promotion from the temporary queue of events to the final queue: only events in the final queue are sent (a separate thread wakes up periodically to see if there is anything to send). The commit() call bypasses the promotion rules mentioned above.
 
@@ -51,7 +51,7 @@ Final serialization on the wire is configurable (e.g. Java Serialization, Thrift
 
 = License (see LICENSE-2.0.txt file for full license)
 
-Copyright 2010 Ning
+Copyright 2010-2011 Ning
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
