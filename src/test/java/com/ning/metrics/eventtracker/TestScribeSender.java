@@ -32,7 +32,7 @@ import java.util.List;
 import static org.testng.Assert.assertFalse;
 import static org.testng.Assert.assertTrue;
 
-public class ScribeSenderTest
+public class TestScribeSender
 {
     private ScribeMockClient scribeClient;
     private ScribeSender scribeSender;
@@ -82,7 +82,7 @@ public class ScribeSenderTest
     @BeforeTest
     public void setUp()
     {
-        this.scribeClient = new ScribeMockClient("localhost", 1242);
+        this.scribeClient = new ScribeMockClient("127.0.0.1", 7911);
         this.scribeSender = new ScribeSender(scribeClient, 1000, 1);
         byte[] data = {1, 2, 3, 4, 5};
         this.thriftEvent = ThriftToThriftEnvelopeEvent.extractEvent("thrift", new DateTime(), new Click("thrift", 12, new String(data)));
@@ -103,7 +103,11 @@ public class ScribeSenderTest
     @Test(groups = "fast")
     public void testSend() throws Exception
     {
-        assertTrue(scribeSender.send(thriftEvent));
+        int i = 100;
+        while (i > 0) {
+            assertTrue(scribeSender.send(thriftEvent));
+            i--;
+        }
     }
 
     @Test(groups = "slow", enabled = false)

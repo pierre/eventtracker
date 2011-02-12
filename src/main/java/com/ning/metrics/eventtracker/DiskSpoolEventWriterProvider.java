@@ -20,12 +20,15 @@ import com.google.inject.Inject;
 import com.google.inject.Injector;
 import com.google.inject.Provider;
 import com.ning.metrics.serialization.event.Event;
+import com.ning.metrics.serialization.event.SmileEnvelopeEvent;
+import com.ning.metrics.serialization.smile.SmileEnvelopeEventsToSmileBucketEvents;
 import com.ning.metrics.serialization.writer.DiskSpoolEventWriter;
 import com.ning.metrics.serialization.writer.EventHandler;
 import com.ning.metrics.serialization.writer.SyncType;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
+import java.util.ArrayList;
 import java.util.concurrent.ScheduledExecutorService;
 
 public class DiskSpoolEventWriterProvider implements Provider<DiskSpoolEventWriter>
@@ -65,12 +68,30 @@ public class DiskSpoolEventWriterProvider implements Provider<DiskSpoolEventWrit
             @Override
             public void handle(ObjectInputStream objectInputStream) throws ClassNotFoundException, IOException
             {
+                ArrayList<SmileEnvelopeEvent> events = new ArrayList<SmileEnvelopeEvent>();
+
                 while (objectInputStream.read() != -1) {
                     Event event = (Event) objectInputStream.readObject();
-                    eventSender.send(event);
+
+                    // TODO This is suboptimal as it requires a dependency to com.ning:metrics-serialization
+                    // How could we be smarter here? Specific Smile DiskSpoolEventWriter, manually configured by the user?
+                    if (event instanceof SmileEnvelopeEvent) {
+                        events.add((SmileEnvelopeEvent) event);
+                    }
+                    else {
+                        // Not a SmileEnvelopeEvent: it is either already a SmileBucketEvent or a ThriftEnvelopeEvent.
+                        // In both cases, don't buffer.
+                        eventSender.send(event);
+                    }
                 }
 
                 objectInputStream.close();
+
+                if (events.size() > 0) {
+                    for (Event event : SmileEnvelopeEventsToSmileBucketEvents.extractEvents(events)) {
+                        eventSender.send(event);
+                    }
+                }
             }
 
             @Override

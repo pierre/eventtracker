@@ -28,6 +28,7 @@ import org.testng.annotations.Test;
 import java.io.File;
 import java.util.UUID;
 
+@Test(enabled = false)
 public class TestIntegration
 {
     private final File tmpDir = new File(System.getProperty("java.io.tmpdir"), "collector");
@@ -51,7 +52,7 @@ public class TestIntegration
         tmpDir.delete();
     }
 
-    @Test(enabled = false)
+    @Test(groups = "slow", enabled = false)
     public void testGuice() throws Exception
     {
         System.setProperty("eventtracker.type", "SCRIBE");
@@ -70,7 +71,7 @@ public class TestIntegration
         sender.shutdown();
     }
 
-    @Test(enabled = false)
+    @Test(groups = "slow", enabled = false)
     public void testScribeFactory() throws Exception
     {
         CollectorController controller = ScribeCollectorFactory.createScribeController(

@@ -24,6 +24,7 @@ import java.io.IOException;
 class MockCollectorSender implements EventSender
 {
     private MockCollectorClient collectorClient;
+    private Event receivedEvent;
 
     @Inject
     public MockCollectorSender()
@@ -34,6 +35,7 @@ class MockCollectorSender implements EventSender
     @Override
     public boolean send(Event event) throws IOException
     {
+        receivedEvent = event;
         return collectorClient.postThrift(event);
     }
 
@@ -50,5 +52,10 @@ class MockCollectorSender implements EventSender
     public long getSuccessCount()
     {
         return collectorClient.getSuccessCount();
+    }
+
+    public Event getReceivedEvent()
+    {
+        return receivedEvent;
     }
 }
