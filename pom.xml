@@ -329,6 +329,7 @@
                         <exclude>.gitignore</exclude>
                         <exclude>deploy.sh</exclude>
                         <exclude>src/site/**</exclude>
+                        <exclude>src/test/java/com/ning/metrics/eventtracker/Click.thrift</exclude>
                     </excludes>
                 </configuration>
             </plugin>
