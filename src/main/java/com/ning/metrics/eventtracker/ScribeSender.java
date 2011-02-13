@@ -17,10 +17,10 @@
 package com.ning.metrics.eventtracker;
 
 import com.ning.metrics.serialization.event.Event;
+import com.ning.metrics.serialization.event.SmileBucketEvent;
 import com.ning.metrics.serialization.util.Managed;
 import org.apache.commons.codec.binary.Base64;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.apache.log4j.Logger;
 import org.apache.thrift.transport.TTransportException;
 import scribe.thrift.LogEntry;
 import scribe.thrift.ResultCode;
@@ -45,7 +45,9 @@ import java.util.concurrent.atomic.AtomicInteger;
  */
 public class ScribeSender implements EventSender
 {
-    private static final Log log = LogFactory.getLog(ScribeSender.class);
+    private static final Logger log = Logger.getLogger(ScribeSender.class);
+
+    private static final Charset CHARSET = Charset.forName("ISO-8859-1");
 
     private final AtomicInteger connectionRetries = new AtomicInteger(0);
     private ScribeClient scribeClient;
@@ -127,22 +129,8 @@ public class ScribeSender implements EventSender
         List<LogEntry> list = new ArrayList<LogEntry>(1);
         // TODO: update Scribe to pass a Thrift directly instead of serializing it
 
-        // Has the sender specified how to send the data?
-        byte[] payload = event.getSerializedEvent();
-
-        // Nope, default to ObjectOutputStream
-        if (payload == null) {
-            ByteArrayOutputStream out = new ByteArrayOutputStream();
-            event.writeExternal(new ObjectOutputStream(out));
-            payload = out.toByteArray();
-
-            // 64-bit encode the serialized object
-            payload = new Base64().encode(payload);
-        }
-
-
-        String scribePayload = new String(payload, Charset.forName("UTF-8"));
-        list.add(new LogEntry(event.getName(), String.format("%s:%s", event.getEventDateTime().getMillis(), scribePayload)));
+        final String logEntryMessage = eventToLogEntryMessage(event);
+        list.add(new LogEntry(event.getName(), logEntryMessage));
 
         try {
             res = scribeClient.log(list);
@@ -167,6 +155,34 @@ public class ScribeSender implements EventSender
         }
 
         return res == ResultCode.OK;
+    }
+
+    protected static String eventToLogEntryMessage(Event event) throws IOException
+    {
+        // Has the sender specified how to send the data?
+        byte[] payload = event.getSerializedEvent();
+
+        // Nope, default to ObjectOutputStream
+        if (payload == null) {
+            ByteArrayOutputStream out = new ByteArrayOutputStream();
+            event.writeExternal(new ObjectOutputStream(out));
+            payload = out.toByteArray();
+
+            // 64-bit encode the serialized object
+            payload = new Base64().encode(payload);
+        }
+
+        String scribePayload = new String(payload, CHARSET);
+
+        // TODO Ugly code...
+        if (event instanceof SmileBucketEvent) {
+            return scribePayload;
+        }
+        else {
+            // To avoid costly Thrift deserialization on the collector side, we embed the
+            // timestamp in the format, outside of the payload. We need it for HDFS routing.
+            return String.format("%s:%s", event.getEventDateTime().getMillis(), scribePayload);
+        }
     }
 
     @Managed(description = "Get the number of messages successfully sent since startup to Scribe")
