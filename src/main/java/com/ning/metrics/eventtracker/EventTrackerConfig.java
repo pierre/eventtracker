@@ -16,11 +16,13 @@
 
 package com.ning.metrics.eventtracker;
 
+import com.ning.metrics.serialization.util.Managed;
 import org.skife.config.Config;
 
 public class EventTrackerConfig
 {
     private String type = "COLLECTOR";
+    private String httpEventEncodingType = "THRIFT";
     private long flushEventQueueSize = 10000;
     private int refreshDelayInSeconds = 60;
     private String spoolDirectoryName = "/tmp/eventtracker/diskspool";
@@ -37,8 +39,8 @@ public class EventTrackerConfig
     /**
      * Configure the type of the eventtracker. Valid values are:
      * <ul>
-     * <li>SCRIBE: Thrift protocol
-     * <li>COLLECTOR: HTTP protocol
+     * <li>SCRIBE: Thrift (RPC) protocol (Thrift payload)
+     * <li>COLLECTOR: HTTP protocol (Thrift or Json/Smile payload)
      * <li>DUMMY: no-op
      * </ul>
      *
@@ -49,6 +51,31 @@ public class EventTrackerConfig
     {
         // config-magic doesn't support enums :(
         return type;
+    }
+
+    /**
+     * Configure the type of the events passed "over the wire". Valid values are:
+     * <ul>
+     * <li>THRIFT: Thrift
+     * <li>JSON: JSON
+     * <li>SMILE: Smile
+     * <li>DUMMY: no-op
+     * </ul>
+     *
+     * @return the type of eventtracker to use
+     */
+    @Config(value = "eventtracker.http.eventEncoding")
+    public String getHttpEventEncodingType()
+    {
+        return httpEventEncodingType;
+    }
+
+    @Managed(description = "Set the event encoding type")
+    public void setHttpEventEncodingType(String httpEventEncodingType)
+    {
+        // test if this throws an error
+        EventEncodingType.valueOf(httpEventEncodingType);
+        this.httpEventEncodingType = httpEventEncodingType;
     }
 
     //------------------- Spooling -------------------//

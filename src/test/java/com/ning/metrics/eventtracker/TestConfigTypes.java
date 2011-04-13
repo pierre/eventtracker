@@ -84,4 +84,27 @@ public class TestConfigTypes
         final EventTrackerConfig eventTrackerConfig = new ConfigurationObjectFactory(p).build(EventTrackerConfig.class);
         Assert.assertEquals(Type.valueOf(eventTrackerConfig.getType()), Type.NO_LOGGING);
     }
+
+    public void testEventEncodingType()
+    {
+        p.put("eventtracker.event.encoding", "THRIFT");
+        EventTrackerConfig eventTrackerConfig = new ConfigurationObjectFactory(p).build(EventTrackerConfig.class);
+        Assert.assertEquals(EventEncodingType.valueOf(eventTrackerConfig.getHttpEventEncodingType()), EventEncodingType.THRIFT);
+
+        p.put("eventtracker.event.encoding", "JSON");
+        eventTrackerConfig = new ConfigurationObjectFactory(p).build(EventTrackerConfig.class);
+        Assert.assertEquals(EventEncodingType.valueOf(eventTrackerConfig.getHttpEventEncodingType()), EventEncodingType.JSON);
+
+        eventTrackerConfig.setHttpEventEncodingType("SMILE");
+        Assert.assertEquals(EventEncodingType.valueOf(eventTrackerConfig.getHttpEventEncodingType()), EventEncodingType.SMILE);
+
+        eventTrackerConfig.setHttpEventEncodingType("TYPO");
+        try {
+            EventEncodingType.valueOf(eventTrackerConfig.getHttpEventEncodingType());
+            Assert.fail("expected exception");
+        }
+        catch (Exception e) {
+            // does anything need to go here?
+        }
+    }
 }

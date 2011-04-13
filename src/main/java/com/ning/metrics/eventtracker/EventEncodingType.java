@@ -16,25 +16,25 @@
 
 package com.ning.metrics.eventtracker;
 
-import com.google.inject.Inject;
-import com.ning.metrics.serialization.event.Event;
-import org.apache.commons.httpclient.HttpClient;
+/*
+ * Used to specify how we encode events on the wire
+ * when using HTTP POST
+ */
 
-import java.io.IOException;
+public enum EventEncodingType {
 
-class HttpSender implements EventSender
-{
-    private CollectorHttpClient collectorHttpClient;
+    THRIFT("ning/thrift"),
+    JSON("application/json"), // MediaType.APPLICATION_JSON = "application/json"
+    SMILE("application/json+smile"),
+    ;
+    private String strVal;
 
-    @Inject
-    public HttpSender(CollectorUriBuilder uriBuilder, HttpClient httpClient, EventTrackerConfig config)
-    {
-        this.collectorHttpClient = new CollectorHttpClient(uriBuilder, httpClient, config);
+    private EventEncodingType(String strVal) {
+        this.strVal = strVal;
     }
 
     @Override
-    public boolean send(Event event) throws IOException
-    {
-        return collectorHttpClient.post(event);
+    public String toString() {
+        return strVal;
     }
 }
