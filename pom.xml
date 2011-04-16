@@ -191,8 +191,11 @@
                     </execution>
                 </executions>
             </plugin>
+<!--
             <plugin>
+-->
                 <!-- See reporting section for configuration -->
+<!--
                 <groupId>org.apache.rat</groupId>
                 <artifactId>apache-rat-plugin</artifactId>
                 <version>0.7</version>
@@ -205,6 +208,7 @@
                     </execution>
                 </executions>
             </plugin>
+-->
             <!-- Add plugins bound to verify phase before gpg plugin -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>

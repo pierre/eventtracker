@@ -60,9 +60,8 @@ public class CollectorControllerModule extends AbstractModule
 
         switch (type) {
             case COLLECTOR:
-                bind(HttpClient.class)
-                    .to(HttpClient.class) // despite what Idea thinks, the "to(HttpClient.class)" is necessary
-                    .in(Singleton.class);
+                HttpClient httpClient = new HttpClient();
+                bind(HttpClient.class).toInstance(httpClient);
                 bind(CollectorUriBuilder.class).to(SimpleUriBuilder.class).in(Singleton.class);
                 bind(EventSender.class).to(HttpSender.class);
                 log.info("Enabled Collector Event Logging");

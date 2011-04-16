@@ -43,23 +43,9 @@ public class CollectorHttpClient
     private static final ObjectMapper mapper = new ObjectMapper();
     private static final LinkedHashMap<Short, String> map = new LinkedHashMap<Short, String>();
 
-    public static final String URI_PATH = "/rest/1.0/event";
-
     private final CollectorUriBuilder uriBuilder;
     private final HttpClient httpClient;
     private final EventTrackerConfig config;
-
-    /**
-     * Creates a new Collector Client that uses a fixed host and port as target.
-     *
-     * @param host   Collector hostname or SLB VIP
-     * @param port   Collector port
-     * @param client HttpClient to use
-     */
-    public CollectorHttpClient(String host, int port, HttpClient client, EventTrackerConfig config)
-    {
-        this(new SimpleUriBuilder(String.format("http://%s:%d%s", host, port, URI_PATH)), client, config);
-    }
 
     /**
      * Creates a new Collector Client that uses an URI builder implementation to find
@@ -68,7 +54,7 @@ public class CollectorHttpClient
      * @param uriBuilder CollectorUriBuilder to use
      * @param httpClient HttpClient to use
      */
-    public CollectorHttpClient(final CollectorUriBuilder uriBuilder, final HttpClient httpClient, EventTrackerConfig config)
+    public CollectorHttpClient(final CollectorUriBuilder uriBuilder, final HttpClient httpClient, final EventTrackerConfig config)
     {
         this.uriBuilder = uriBuilder;
         this.httpClient = httpClient;

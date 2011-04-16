@@ -167,6 +167,18 @@ public class EventTrackerConfig
         return rateWindowSizeMinutes;
     }
 
+    @Config(value = "eventtracker.collector.host")
+    public String getCollectorHost()
+    {
+        return "127.0.0.1";
+    }
+
+    @Config(value = "eventtracker.collector.port")
+    public int getCollectorPort()
+    {
+        return 8080;
+    }
+
     //------------------- Scribe Sender -------------------//
 
     /**

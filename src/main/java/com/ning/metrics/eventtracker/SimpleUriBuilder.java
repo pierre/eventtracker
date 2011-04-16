@@ -16,6 +16,8 @@
 
 package com.ning.metrics.eventtracker;
 
+import com.google.inject.Inject;
+
 import java.net.URI;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
@@ -27,13 +29,15 @@ import java.util.Map;
  */
 final class SimpleUriBuilder implements CollectorUriBuilder
 {
+    private static final String URI_PATH = "/rest/1.0/event";
 
     private final String baseUri;
     private final Map<String, String> queryParams;
 
-    public SimpleUriBuilder()
+    @Inject
+    public SimpleUriBuilder(final EventTrackerConfig config)
     {
-        this("");
+        this(String.format("http://%s:%d%s", config.getCollectorHost(), config.getCollectorPort(), URI_PATH));
     }
 
     SimpleUriBuilder(final String baseUri)
