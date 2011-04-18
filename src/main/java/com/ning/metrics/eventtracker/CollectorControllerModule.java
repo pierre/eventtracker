@@ -76,7 +76,7 @@ public class CollectorControllerModule extends AbstractModule
 
         bind(ScheduledExecutorService.class).toInstance(new ScheduledThreadPoolExecutor(1, Executors.defaultThreadFactory()));
         bind(CollectorController.class).in(new FixedManagedJmxExportScope(log, "eventtracker:name=CollectorController"));
-        bind(DiskSpoolEventWriter.class).toProvider(DiskSpoolEventWriterProvider.class);
+        bind(DiskSpoolEventWriter.class).toProvider(DiskSpoolEventWriterProvider.class).asEagerSingleton();
         bind(EventWriter.class).toProvider(ThresholdEventWriterProvider.class);
     }
 }
