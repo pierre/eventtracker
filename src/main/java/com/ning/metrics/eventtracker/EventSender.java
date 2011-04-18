@@ -17,10 +17,9 @@
 package com.ning.metrics.eventtracker;
 
 import com.ning.metrics.serialization.event.Event;
-
-import java.io.IOException;
+import com.ning.metrics.serialization.writer.CallbackHandler;
 
 interface EventSender
 {
-    public boolean send(Event event) throws IOException;
+    public void send(Event event, CallbackHandler handler);
 }

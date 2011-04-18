@@ -18,6 +18,7 @@ package com.ning.metrics.eventtracker;
 
 import com.ning.metrics.serialization.event.Event;
 import com.ning.metrics.serialization.util.FixedManagedJmxExport;
+import com.ning.metrics.serialization.writer.CallbackHandler;
 import com.ning.metrics.serialization.writer.DiskSpoolEventWriter;
 import com.ning.metrics.serialization.writer.EventHandler;
 import com.ning.metrics.serialization.writer.SyncType;
@@ -153,11 +154,11 @@ public class ScribeCollectorFactory
         DiskSpoolEventWriter eventWriter = new DiskSpoolEventWriter(new EventHandler()
         {
             @Override
-            public void handle(ObjectInputStream objectInputStream) throws ClassNotFoundException, IOException
+            public void handle(ObjectInputStream objectInputStream, CallbackHandler handler) throws ClassNotFoundException, IOException
             {
                 while (objectInputStream.read() != -1) {
                     Event event = (Event) objectInputStream.readObject();
-                    eventSender.send(event);
+                    eventSender.send(event, handler);
                 }
 
                 objectInputStream.close();

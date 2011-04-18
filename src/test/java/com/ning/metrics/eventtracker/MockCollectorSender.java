@@ -18,8 +18,7 @@ package com.ning.metrics.eventtracker;
 
 import com.google.inject.Inject;
 import com.ning.metrics.serialization.event.Event;
-
-import java.io.IOException;
+import com.ning.metrics.serialization.writer.CallbackHandler;
 
 class MockCollectorSender implements EventSender
 {
@@ -33,10 +32,11 @@ class MockCollectorSender implements EventSender
     }
 
     @Override
-    public boolean send(Event event) throws IOException
+    public void send(Event event, CallbackHandler handler)
     {
         receivedEvent = event;
-        return collectorClient.postThrift(event);
+        collectorClient.postThrift(event);
+        handler.onSuccess(event);
     }
 
     public void setFail(boolean fail)

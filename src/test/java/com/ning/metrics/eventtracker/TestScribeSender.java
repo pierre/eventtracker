@@ -18,6 +18,7 @@ package com.ning.metrics.eventtracker;
 
 import com.ning.metrics.serialization.event.Event;
 import com.ning.metrics.serialization.event.ThriftToThriftEnvelopeEvent;
+import com.ning.metrics.serialization.writer.CallbackHandler;
 import org.apache.thrift.transport.TTransportException;
 import org.joda.time.DateTime;
 import org.testng.Assert;
@@ -29,7 +30,6 @@ import scribe.thrift.ResultCode;
 
 import java.util.List;
 
-import static org.testng.Assert.assertFalse;
 import static org.testng.Assert.assertTrue;
 
 public class TestScribeSender
@@ -97,7 +97,20 @@ public class TestScribeSender
     @Test(groups = "fast")
     public void testSendNullScribeSender() throws Exception
     {
-        assertFalse(new ScribeSender(null, 0, 4).send(thriftEvent));
+        new ScribeSender(null, 0, 4).send(thriftEvent, new CallbackHandler()
+        {
+            @Override
+            public void onError(Throwable t, Event event)
+            {
+                assertTrue(true);
+            }
+
+            @Override
+            public void onSuccess(Event event)
+            {
+                assertTrue(false);
+            }
+        });
     }
 
     @Test(groups = "fast")
@@ -105,7 +118,21 @@ public class TestScribeSender
     {
         int i = 100;
         while (i > 0) {
-            assertTrue(scribeSender.send(thriftEvent));
+            scribeSender.send(thriftEvent, new CallbackHandler()
+            {
+
+                @Override
+                public void onError(Throwable t, Event event)
+                {
+                    assertTrue(false);
+                }
+
+                @Override
+                public void onSuccess(Event event)
+                {
+                    assertTrue(true);
+                }
+            });
             i--;
         }
     }

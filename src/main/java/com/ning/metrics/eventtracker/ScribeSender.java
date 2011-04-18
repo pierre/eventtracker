@@ -19,11 +19,11 @@ package com.ning.metrics.eventtracker;
 import com.ning.metrics.serialization.event.Event;
 import com.ning.metrics.serialization.event.SmileBucketEvent;
 import com.ning.metrics.serialization.util.Managed;
+import com.ning.metrics.serialization.writer.CallbackHandler;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.log4j.Logger;
 import org.apache.thrift.transport.TTransportException;
 import scribe.thrift.LogEntry;
-import scribe.thrift.ResultCode;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -114,26 +114,32 @@ public class ScribeSender implements EventSender
     }
 
     @Override
-    public boolean send(Event event) throws IOException
+    public void send(Event event, CallbackHandler handler)
     {
         if (scribeClient == null) {
-            log.warn("Scribe client has not been set up correctly.");
-            return false;
+            handler.onError(new Throwable("Scribe client has not been set up correctly"), event);
+            return;
         }
 
         // Tell the watchdog that we are doing something
         sleeping.set(false);
 
-        ResultCode res;
         // TODO: offer batch API?, see drainEvents
         List<LogEntry> list = new ArrayList<LogEntry>(1);
         // TODO: update Scribe to pass a Thrift directly instead of serializing it
 
-        final String logEntryMessage = eventToLogEntryMessage(event);
+        final String logEntryMessage;
+        try {
+            logEntryMessage = eventToLogEntryMessage(event);
+        }
+        catch (IOException e) {
+            handler.onError(new Throwable(e), event);
+            return;
+        }
         list.add(new LogEntry(event.getName(), logEntryMessage));
 
         try {
-            res = scribeClient.log(list);
+            scribeClient.log(list);
             messagesSuccessfullySent.addAndGet(list.size());
             messagesSuccessfullySentSinceLastReconnection.addAndGet(list.size());
 
@@ -149,12 +155,10 @@ public class ScribeSender implements EventSender
             // Connection flacky?
             log.warn(String.format("Error while sending message to Scribe: %s", e.getLocalizedMessage()));
             createConnection();
-
-            // Throw the exception for the caller to log the exception before quarantining the events
-            throw new IOException(e);
+            handler.onError(new Throwable(e), event);
         }
 
-        return res == ResultCode.OK;
+        handler.onSuccess(event);
     }
 
     protected static String eventToLogEntryMessage(Event event) throws IOException

@@ -22,6 +22,7 @@ import com.google.inject.Provider;
 import com.ning.metrics.serialization.event.Event;
 import com.ning.metrics.serialization.event.SmileEnvelopeEvent;
 import com.ning.metrics.serialization.smile.SmileEnvelopeEventsToSmileBucketEvents;
+import com.ning.metrics.serialization.writer.CallbackHandler;
 import com.ning.metrics.serialization.writer.DiskSpoolEventWriter;
 import com.ning.metrics.serialization.writer.EventHandler;
 import com.ning.metrics.serialization.writer.SyncType;
@@ -66,7 +67,7 @@ public class DiskSpoolEventWriterProvider implements Provider<DiskSpoolEventWrit
         return new DiskSpoolEventWriter(new EventHandler()
         {
             @Override
-            public void handle(ObjectInputStream objectInputStream) throws ClassNotFoundException, IOException
+            public void handle(ObjectInputStream objectInputStream, CallbackHandler handler) throws ClassNotFoundException, IOException
             {
                 ArrayList<SmileEnvelopeEvent> events = new ArrayList<SmileEnvelopeEvent>();
 
@@ -81,7 +82,7 @@ public class DiskSpoolEventWriterProvider implements Provider<DiskSpoolEventWrit
                     else {
                         // Not a SmileEnvelopeEvent: it is either already a SmileBucketEvent or a ThriftEnvelopeEvent.
                         // In both cases, don't buffer.
-                        eventSender.send(event);
+                        eventSender.send(event, handler);
                     }
                 }
 
@@ -89,7 +90,7 @@ public class DiskSpoolEventWriterProvider implements Provider<DiskSpoolEventWrit
 
                 if (events.size() > 0) {
                     for (Event event : SmileEnvelopeEventsToSmileBucketEvents.extractEvents(events)) {
-                        eventSender.send(event);
+                        eventSender.send(event, handler);
                     }
                 }
             }

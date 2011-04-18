@@ -21,20 +21,22 @@ package com.ning.metrics.eventtracker;
  * when using HTTP POST
  */
 
-public enum EventEncodingType {
-
+public enum EventEncodingType
+{
     THRIFT("ning/thrift"),
     JSON("application/json"), // MediaType.APPLICATION_JSON = "application/json"
-    SMILE("application/json+smile"),
-    ;
+    SMILE("application/json+smile");
+
     private String strVal;
 
-    private EventEncodingType(String strVal) {
+    private EventEncodingType(String strVal)
+    {
         this.strVal = strVal;
     }
 
     @Override
-    public String toString() {
+    public String toString()
+    {
         return strVal;
     }
 }

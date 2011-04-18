@@ -17,24 +17,85 @@
 package com.ning.metrics.eventtracker;
 
 import com.google.inject.Inject;
+import com.ning.http.client.SimpleAsyncHttpClient;
+import com.ning.http.client.ThrowableHandler;
+import com.ning.http.client.generators.InputStreamBodyGenerator;
 import com.ning.metrics.serialization.event.Event;
-import org.apache.commons.httpclient.HttpClient;
+import com.ning.metrics.serialization.writer.CallbackHandler;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.ObjectOutputStream;
 
 class HttpSender implements EventSender
 {
-    private CollectorHttpClient collectorHttpClient;
+    public static final String URI_PATH = "/rest/1.0/event";
+    private static final int DEFAULT_IDLE_CONNECTION_IN_POOL_TIMEOUT_IN_MS = 120000; // 2 minutes
+
+    private final String collectorURI;
+    private final String httpContentType;
 
     @Inject
-    public HttpSender(CollectorUriBuilder uriBuilder, HttpClient httpClient, EventTrackerConfig config)
+    public HttpSender(EventTrackerConfig config)
     {
-        this.collectorHttpClient = new CollectorHttpClient(uriBuilder, httpClient, config);
+        collectorURI = String.format("http://%s:%d%s", config.getCollectorHost(), config.getCollectorPort(), URI_PATH);
+        httpContentType = EventEncodingType.valueOf(config.getHttpEventEncodingType()).toString();
     }
 
     @Override
-    public boolean send(Event event) throws IOException
+    public void send(final Event event, final CallbackHandler handler)
     {
-        return collectorHttpClient.post(event);
+        // Construct client with appropriate query parameters
+        SimpleAsyncHttpClient client = getHttpClient(event);
+
+        // Serialize the event
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        try {
+            event.writeExternal(new ObjectOutputStream(out));
+        }
+        catch (IOException e) {
+            handler.onError(new Throwable(e), event);
+            return;
+        }
+
+        // Submit the event
+        try {
+            client.post(
+                new InputStreamBodyGenerator(new ByteArrayInputStream(out.toByteArray())),
+                new ThrowableHandler()
+                {
+                    @Override
+                    public void onThrowable(Throwable t)
+                    {
+                        handler.onError(t, event);
+                    }
+                });
+        }
+        catch (IOException e) {
+            handler.onError(new Throwable(e), event);
+        }
+
+        handler.onSuccess(event);
+    }
+
+    private SimpleAsyncHttpClient getHttpClient(Event event)
+    {
+        final SimpleAsyncHttpClient.Builder clientBuilder = new SimpleAsyncHttpClient.Builder()
+            .setIdleConnectionInPoolTimeoutInMs(DEFAULT_IDLE_CONNECTION_IN_POOL_TIMEOUT_IN_MS)
+            .setHeader("Content-Type", httpContentType)
+            .setUrl(collectorURI);
+
+        clientBuilder.addParameter("name", event.getName());
+
+        if (event.getEventDateTime() != null) {
+            clientBuilder.addParameter("date", event.getEventDateTime().toString());
+        }
+
+        if (event.getGranularity() != null) {
+            clientBuilder.addParameter("granularity", event.getGranularity().toString());
+        }
+
+        return clientBuilder.build();
     }
 }

@@ -17,10 +17,8 @@
 package com.ning.metrics.eventtracker;
 
 import com.google.inject.AbstractModule;
-import com.google.inject.Singleton;
 import com.ning.metrics.serialization.writer.DiskSpoolEventWriter;
 import com.ning.metrics.serialization.writer.EventWriter;
-import org.apache.commons.httpclient.HttpClient;
 import org.apache.log4j.Logger;
 import org.skife.config.ConfigurationObjectFactory;
 
@@ -60,10 +58,7 @@ public class CollectorControllerModule extends AbstractModule
 
         switch (type) {
             case COLLECTOR:
-                HttpClient httpClient = new HttpClient();
-                bind(HttpClient.class).toInstance(httpClient);
-                bind(CollectorUriBuilder.class).to(SimpleUriBuilder.class).in(Singleton.class);
-                bind(EventSender.class).to(HttpSender.class);
+                bind(EventSender.class).to(HttpSender.class).asEagerSingleton();
                 log.info("Enabled Collector Event Logging");
                 break;
             case SCRIBE:
@@ -72,7 +67,7 @@ public class CollectorControllerModule extends AbstractModule
                 log.info("Enabled Scribe Event Logging");
                 break;
             case NO_LOGGING:
-                bind(EventSender.class).toInstance(new NoLoggingSender());
+                bind(EventSender.class).to(NoLoggingSender.class).asEagerSingleton();
                 log.info("Disabled Event Logging");
                 break;
             default:

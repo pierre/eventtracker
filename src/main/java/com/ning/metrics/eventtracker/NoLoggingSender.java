@@ -17,8 +17,7 @@
 package com.ning.metrics.eventtracker;
 
 import com.ning.metrics.serialization.event.Event;
-
-import java.io.IOException;
+import com.ning.metrics.serialization.writer.CallbackHandler;
 
 /**
  * Accepts a log event but discards it.
@@ -26,8 +25,9 @@ import java.io.IOException;
 class NoLoggingSender implements EventSender
 {
     @Override
-    public boolean send(final Event event) throws IOException
+    public void send(final Event event, CallbackHandler handler)
     {
-        return true;
+        // no-op
+        handler.onSuccess(event);
     }
 }
