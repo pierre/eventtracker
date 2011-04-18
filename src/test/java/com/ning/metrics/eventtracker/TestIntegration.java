@@ -71,7 +71,7 @@ public class TestIntegration
         sender.shutdown();
     }
 
-    @Test(groups = "slow", enabled = true)
+    @Test(groups = "slow", enabled = false)
     public void testScribeFactory() throws Exception
     {
         CollectorController controller = ScribeCollectorFactory.createScribeController(

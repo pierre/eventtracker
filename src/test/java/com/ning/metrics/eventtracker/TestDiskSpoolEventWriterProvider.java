@@ -25,7 +25,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 public class TestDiskSpoolEventWriterProvider
 {
-    private static final File tmpDir = new File(System.getProperty("java.io.tmpdir"), "collector");
+    private static final File tmpDir = new File(System.getProperty("java.io.tmpdir"), "collector-" + System.currentTimeMillis());
     private static final String EVENT_NAME = "myEnvelope";
     private static final DateTime EVENT_DATE_TIME = new DateTime();
 
@@ -44,7 +44,7 @@ public class TestDiskSpoolEventWriterProvider
         tmpDir.delete();
     }
 
-    @Test
+    @Test(groups = "fast")
     public void testMultipleSmileEnvelopeEvents() throws Exception
     {
         // Create a SmileEnvelope event
@@ -88,7 +88,7 @@ public class TestDiskSpoolEventWriterProvider
         Assert.assertEquals(sendCalls.get(), 2);
     }
 
-    @Test
+    @Test(groups = "fast")
     public void testThriftEnvelopeEvent() throws Exception
     {
         // Create a Thrift event
