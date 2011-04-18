@@ -17,7 +17,6 @@
 package com.ning.metrics.eventtracker;
 
 import com.google.inject.Inject;
-import com.google.inject.Injector;
 import com.google.inject.Provider;
 import com.ning.metrics.serialization.event.Event;
 import com.ning.metrics.serialization.event.SmileEnvelopeEvent;
@@ -34,18 +33,18 @@ import java.util.concurrent.ScheduledExecutorService;
 
 public class DiskSpoolEventWriterProvider implements Provider<DiskSpoolEventWriter>
 {
-    private final Injector injector;
+    private final EventTrackerConfig config;
     private final EventSender eventSender;
     private final ScheduledExecutorService executor;
 
     @Inject
     public DiskSpoolEventWriterProvider(
-        Injector injector,
+        EventTrackerConfig config,
         EventSender eventSender,
         ScheduledExecutorService executor
     )
     {
-        this.injector = injector;
+        this.config = config;
         this.eventSender = eventSender;
         this.executor = executor;
     }
@@ -63,7 +62,6 @@ public class DiskSpoolEventWriterProvider implements Provider<DiskSpoolEventWrit
     @Override
     public DiskSpoolEventWriter get()
     {
-        EventTrackerConfig config = injector.getInstance(EventTrackerConfig.class);
         return new DiskSpoolEventWriter(new EventHandler()
         {
             @Override
