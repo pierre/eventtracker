@@ -5,6 +5,7 @@ import com.google.inject.Injector;
 import com.ning.metrics.serialization.event.Event;
 import com.ning.metrics.serialization.event.SmileEnvelopeEvent;
 import com.ning.metrics.serialization.writer.DiskSpoolEventWriter;
+import com.ning.metrics.serialization.writer.MockEventWriter;
 import org.joda.time.DateTime;
 import org.testng.Assert;
 import org.testng.annotations.AfterTest;
@@ -21,6 +22,7 @@ public class TestCollectorController
     private Event event;
     private CollectorController controller;
     private DiskSpoolEventWriter diskWriter;
+
 
     @BeforeTest
     public void setUp() throws IOException
@@ -51,5 +53,49 @@ public class TestCollectorController
         Assert.assertEquals(controller.getEventsReceived().get(), 1);
         diskWriter.commit();
         Assert.assertEquals(controller.getEventsLost().get(), 0);
+    }
+
+    @Test(groups = "fast")
+    public void testWriterThrowsException() throws Exception
+    {
+        MockEventWriter diskWriter = new MockEventWriter();
+        diskWriter.setWriteThrowsException(true);
+        CollectorController controller = new CollectorController(diskWriter);
+
+        try {
+            controller.offerEvent(event);
+            Assert.fail("Should have thrown an IOException");
+        }
+        catch (IOException e) {
+            Assert.assertEquals(diskWriter.getWrittenEventList().size(), 0);
+            Assert.assertEquals(controller.getEventsLost().get(), 1);
+        }
+    }
+
+
+    @Test(groups = "fast")
+    public void testWriterPassThru() throws Exception
+    {
+        MockEventWriter diskWriter = new MockEventWriter();
+        CollectorController controller = new CollectorController(diskWriter);
+
+        Assert.assertEquals(diskWriter.getWrittenEventList().size(), 0);
+        Assert.assertEquals(diskWriter.getCommittedEventList().size(), 0);
+        Assert.assertEquals(diskWriter.getNumberOfFlushedEvents(), 0);
+
+        controller.offerEvent(event);
+        Assert.assertEquals(diskWriter.getWrittenEventList().size(), 1);
+        Assert.assertEquals(diskWriter.getCommittedEventList().size(), 0);
+        Assert.assertEquals(diskWriter.getNumberOfFlushedEvents(), 0);
+
+        controller.commit();
+        Assert.assertEquals(diskWriter.getWrittenEventList().size(), 0);
+        Assert.assertEquals(diskWriter.getCommittedEventList().size(), 1);
+        Assert.assertEquals(diskWriter.getNumberOfFlushedEvents(), 0);
+
+        controller.flush();
+        Assert.assertEquals(diskWriter.getWrittenEventList().size(), 0);
+        Assert.assertEquals(diskWriter.getCommittedEventList().size(), 0);
+        Assert.assertEquals(diskWriter.getNumberOfFlushedEvents(), 1);
     }
 }
