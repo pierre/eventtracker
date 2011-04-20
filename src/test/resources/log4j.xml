@@ -26,6 +26,9 @@
     <logger name="com.ning.metrics">
         <level value="debug"/>
     </logger>
+    <logger name="com.ning.http.client">
+        <level value="debug"/>
+    </logger>
     <root>
         <priority value="info"/>
         <appender-ref ref="stdout"/>
