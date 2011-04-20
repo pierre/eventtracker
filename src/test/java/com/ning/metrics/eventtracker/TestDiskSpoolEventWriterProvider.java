@@ -65,6 +65,8 @@ public class TestDiskSpoolEventWriterProvider
                 Assert.assertTrue(event instanceof SmileBucketEvent);
                 Assert.assertEquals(event.getName(), EVENT_NAME);
                 Assert.assertEquals(((SmileBucketEvent) event).getNumberOfEvent(), numberOfSmileEventsToSend);
+                // SmileBucketEvents don't have dateTimes
+                Assert.assertEquals(event.getEventDateTime(),null);
                 sendCalls.incrementAndGet();
             }
         });
@@ -111,6 +113,7 @@ public class TestDiskSpoolEventWriterProvider
                 Assert.assertEquals(event.getName(), EVENT_NAME);
                 //TODO Assert.assertEquals(event.getEventDateTime().getMillis(), EVENT_DATE_TIME.getMillis());
                 Assert.assertEquals(((ThriftEnvelope) event.getData()).getPayload().size(), 2);
+                Assert.assertEquals(event.getEventDateTime().getMillis(),EVENT_DATE_TIME.getMillis());
                 sendCalls.incrementAndGet();
             }
         });
