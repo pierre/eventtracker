@@ -20,6 +20,7 @@ import com.google.inject.Inject;
 import com.ning.http.client.*;
 import com.ning.metrics.serialization.event.Event;
 import com.ning.metrics.serialization.writer.CallbackHandler;
+import org.joda.time.DateTime;
 
 import java.io.IOException;
 
@@ -52,13 +53,18 @@ class HttpSender implements EventSender
     {
         // Submit the event
         try {
-            client.executeRequest(getRequest(event),
+            client.executeRequest(createPostRequest(event),
                     new AsyncCompletionHandler<String>()
                     {
                         @Override
                         public String onCompleted(Response response) throws Exception
                         {
-                            handler.onSuccess(event);
+                            if (response.getStatusCode() == 202) {
+                                handler.onSuccess(event);
+                            }
+                            else {
+                                handler.onError(new Throwable("Received response "+response.getStatusCode()), null);
+                            }
                             return response.getResponseBody();
                         }
 
@@ -80,12 +86,14 @@ class HttpSender implements EventSender
         client.close();
     }
 
-    private Request getRequest(Event event)
+    private Request createPostRequest(Event event)
     {
+        byte[] serializedEvent = event.getSerializedEvent();
         AsyncHttpClient.BoundRequestBuilder requestBuilder = client.preparePost(collectorURI)
-                .addHeader("Content-Type", httpContentType)
-                .addParameter("name", event.getName())
-                .setBody(event.getSerializedEvent());
+                .addHeader("Content-Length", String.valueOf(serializedEvent.length))
+                .addHeader("Content-Type", httpContentType);
+
+        requestBuilder.addParameter("name", event.getName());
 
         if (event.getEventDateTime() != null) {
             requestBuilder.addParameter("date", event.getEventDateTime().toString());
@@ -94,6 +102,8 @@ class HttpSender implements EventSender
         if (event.getGranularity() != null) {
             requestBuilder.addParameter("granularity", event.getGranularity().toString());
         }
+
+        requestBuilder.setBody(serializedEvent); // FIXME can't add both body & parameters!
 
         return requestBuilder.build();
     }

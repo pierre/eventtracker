@@ -22,7 +22,7 @@ import org.skife.config.Config;
 public class EventTrackerConfig
 {
     private String type = "COLLECTOR";
-    private String httpEventEncodingType = "THRIFT";
+    private String httpEventEncodingType = "SMILE";
     private long flushEventQueueSize = 10000;
     private int refreshDelayInSeconds = 60;
     private String spoolDirectoryName = "/tmp/eventtracker/diskspool";
