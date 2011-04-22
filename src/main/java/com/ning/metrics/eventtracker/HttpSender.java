@@ -63,7 +63,7 @@ class HttpSender implements EventSender
                                 handler.onSuccess(event);
                             }
                             else {
-                                handler.onError(new Throwable("Received response "+response.getStatusCode()), null);
+                                handler.onError(new Throwable(String.format("Received response %d: %s",response.getStatusCode(),response.getStatusText())), null);
                             }
                             return response.getResponseBody();
                         }
@@ -91,19 +91,17 @@ class HttpSender implements EventSender
         byte[] serializedEvent = event.getSerializedEvent();
         AsyncHttpClient.BoundRequestBuilder requestBuilder = client.preparePost(collectorURI)
                 .addHeader("Content-Length", String.valueOf(serializedEvent.length))
-                .addHeader("Content-Type", httpContentType);
-
-        requestBuilder.addParameter("name", event.getName());
+                .addHeader("Content-Type", httpContentType)
+                .setBody(serializedEvent)
+                .addQueryParameter("name", event.getName());
 
         if (event.getEventDateTime() != null) {
-            requestBuilder.addParameter("date", event.getEventDateTime().toString());
+            requestBuilder.addQueryParameter("date", event.getEventDateTime().toString());
         }
 
         if (event.getGranularity() != null) {
-            requestBuilder.addParameter("granularity", event.getGranularity().toString());
+            requestBuilder.addQueryParameter("granularity", event.getGranularity().toString());
         }
-
-        requestBuilder.setBody(serializedEvent); // FIXME can't add both body & parameters!
 
         return requestBuilder.build();
     }
