@@ -18,6 +18,7 @@ package com.ning.metrics.eventtracker;
 
 import com.google.inject.Guice;
 import com.google.inject.Injector;
+import com.ning.metrics.serialization.event.SmileEnvelopeEvent;
 import com.ning.metrics.serialization.event.ThriftToThriftEnvelopeEvent;
 import org.joda.time.DateTime;
 import org.testng.Assert;
@@ -26,6 +27,7 @@ import org.testng.annotations.BeforeTest;
 import org.testng.annotations.Test;
 
 import java.io.File;
+import java.util.HashMap;
 import java.util.UUID;
 
 @Test(enabled = false)
@@ -53,7 +55,22 @@ public class TestIntegration
     }
 
     @Test(groups = "slow", enabled = false)
-    public void testGuice() throws Exception
+    public void testGuiceSmile() throws Exception
+    {
+        System.setProperty("eventtracker.type", "COLLECTOR");
+        System.setProperty("eventtracker.directory", tmpDir.getAbsolutePath());
+        System.setProperty("eventtracker.collector.host", "127.0.0.1");
+        System.setProperty("eventtracker.collector.port", "8080");
+
+        Injector injector = Guice.createInjector(new CollectorControllerModule());
+        CollectorController controller = injector.getInstance(CollectorController.class);
+        HttpSender sender = (HttpSender) injector.getInstance(EventSender.class);
+
+        fireSmileEvents(controller);
+    }
+
+    @Test(groups = "slow", enabled = false)
+    public void testGuiceThrift() throws Exception
     {
         System.setProperty("eventtracker.type", "SCRIBE");
         System.setProperty("eventtracker.directory", tmpDir.getAbsolutePath());
@@ -66,7 +83,7 @@ public class TestIntegration
 
         sender.createConnection();
 
-        fireEvents(controller);
+        fireThriftEvents(controller);
 
         sender.shutdown();
     }
@@ -88,12 +105,25 @@ public class TestIntegration
             1
         );
 
-        fireEvents(controller);
+        fireThriftEvents(controller);
     }
 
-    private void fireEvents(CollectorController controller) throws Exception
+    private void fireThriftEvents(CollectorController controller) throws Exception
     {
         controller.offerEvent(ThriftToThriftEnvelopeEvent.extractEvent("thrift", new DateTime(), new Click(UUID.randomUUID().toString(), new DateTime().getMillis(), "user agent")));
+        Assert.assertEquals(controller.getEventsReceived().get(), 1);
+        Assert.assertEquals(controller.getEventsLost().get(), 0);
+        controller.commit();
+        controller.flush();
+        Thread.sleep(5000);
+    }
+
+    private void fireSmileEvents(CollectorController controller) throws Exception
+    {
+        HashMap<String, Object> map = new HashMap<String, Object>();
+        map.put("hello", "world");
+        controller.offerEvent(new SmileEnvelopeEvent("smileEvent", new DateTime(), map));
+
         Assert.assertEquals(controller.getEventsReceived().get(), 1);
         Assert.assertEquals(controller.getEventsLost().get(), 0);
         controller.commit();
