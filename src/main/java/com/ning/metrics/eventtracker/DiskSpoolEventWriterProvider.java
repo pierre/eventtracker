@@ -67,7 +67,11 @@ public class DiskSpoolEventWriterProvider implements Provider<DiskSpoolEventWrit
             @Override
             public void handle(ObjectInputStream objectInputStream, CallbackHandler handler) throws ClassNotFoundException, IOException
             {
-                ArrayList<SmileEnvelopeEvent> events = new ArrayList<SmileEnvelopeEvent>();
+                ArrayList<SmileEnvelopeEvent> smileEnvelopeEvents = new ArrayList<SmileEnvelopeEvent>();
+                ArrayList<Event> miscEvents = new ArrayList<Event>();
+
+                // extract all events
+                // all errors are thrown here. before events are sent.
 
                 while (objectInputStream.read() != -1) {
                     Event event = (Event) objectInputStream.readObject();
@@ -75,19 +79,25 @@ public class DiskSpoolEventWriterProvider implements Provider<DiskSpoolEventWrit
                     // TODO This is suboptimal as it requires a dependency to com.ning:metrics-serialization
                     // How could we be smarter here? Specific Smile DiskSpoolEventWriter, manually configured by the user?
                     if (event instanceof SmileEnvelopeEvent) {
-                        events.add((SmileEnvelopeEvent) event);
+                        smileEnvelopeEvents.add((SmileEnvelopeEvent) event);
                     }
                     else {
                         // Not a SmileEnvelopeEvent: it is either already a SmileBucketEvent or a ThriftEnvelopeEvent.
                         // In both cases, don't buffer.
-                        eventSender.send(event, handler);
+                        miscEvents.add(event);
                     }
                 }
 
                 objectInputStream.close();
 
-                if (events.size() > 0) {
-                    for (Event event : SmileEnvelopeEventsToSmileBucketEvents.extractEvents(events)) {
+                // send all events
+
+                for (Event event : miscEvents) {
+                    eventSender.send(event, handler);
+                }
+
+                if (smileEnvelopeEvents.size() > 0) {
+                    for (Event event : SmileEnvelopeEventsToSmileBucketEvents.extractEvents(smileEnvelopeEvents)) {
                         eventSender.send(event, handler);
                     }
                 }
