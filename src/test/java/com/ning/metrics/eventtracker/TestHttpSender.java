@@ -18,9 +18,8 @@ package com.ning.metrics.eventtracker;
 import com.ning.metrics.serialization.event.Event;
 import com.ning.metrics.serialization.event.Granularity;
 import com.ning.metrics.serialization.writer.CallbackHandler;
+import org.eclipse.jetty.server.*;
 import org.joda.time.DateTime;
-import org.eclipse.jetty.server.Connector;
-import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.nio.SelectChannelConnector;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -29,6 +28,7 @@ import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
+import javax.servlet.ServletException;
 import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
@@ -39,6 +39,7 @@ public class TestHttpSender
     private final static Logger logger = LoggerFactory.getLogger(TestHttpSender.class);
 
     private Server server;
+    private Server errorServer;
     private HttpSender sender;
     private CallbackHandler failureCallbackHandler;
     private CallbackHandler successCallbackHandler;
@@ -54,6 +55,20 @@ public class TestHttpSender
         listener.setHost("127.0.0.1");
         listener.setPort(port);
         server.addConnector(listener);
+
+        // Set up server that will return 404
+        errorServer = new Server(){
+            public void handle(HttpConnection connection) throws IOException, ServletException
+            {
+                final String target=connection.getRequest().getPathInfo();
+                final Request request=connection.getRequest();
+                final Response response=connection.getResponse();
+                response.setStatus(404);
+
+                handle(target, request, request, response);
+            }
+        };
+        errorServer.addConnector(listener);
 
         // Set up sender
         sender = new HttpSender(new EventTrackerConfig()
@@ -97,8 +112,6 @@ public class TestHttpSender
     @AfterClass(alwaysRun = true)
     public void tearDownGlobal() throws Exception
     {
-        Thread.sleep((long) 500);
-        server.stop();
         sender.closeClient();
     }
 
@@ -115,6 +128,18 @@ public class TestHttpSender
         logger.info("Started server");
         logger.info("sending");
         sender.send(new DummyEvent(), successCallbackHandler);
+        Thread.sleep((long) 500);
+        server.stop();
+    }
+
+    @Test
+    public void test404() throws Exception
+    {
+        errorServer.start();
+        logger.info("sending");
+        sender.send(new DummyEvent(), failureCallbackHandler);
+        Thread.sleep((long) 500);
+        errorServer.stop();
     }
 
     private int findFreePort() throws IOException

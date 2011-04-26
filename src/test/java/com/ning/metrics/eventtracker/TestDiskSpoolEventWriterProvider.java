@@ -111,7 +111,6 @@ public class TestDiskSpoolEventWriterProvider
             {
                 Assert.assertTrue(event instanceof ThriftEnvelopeEvent);
                 Assert.assertEquals(event.getName(), EVENT_NAME);
-                //TODO Assert.assertEquals(event.getEventDateTime().getMillis(), EVENT_DATE_TIME.getMillis());
                 Assert.assertEquals(((ThriftEnvelope) event.getData()).getPayload().size(), 2);
                 Assert.assertEquals(event.getEventDateTime().getMillis(),EVENT_DATE_TIME.getMillis());
                 sendCalls.incrementAndGet();
