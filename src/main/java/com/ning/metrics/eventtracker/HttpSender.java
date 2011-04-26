@@ -20,7 +20,6 @@ import com.google.inject.Inject;
 import com.ning.http.client.*;
 import com.ning.metrics.serialization.event.Event;
 import com.ning.metrics.serialization.writer.CallbackHandler;
-import org.joda.time.DateTime;
 
 import java.io.IOException;
 
@@ -63,9 +62,9 @@ class HttpSender implements EventSender
                                 handler.onSuccess(event);
                             }
                             else {
-                                handler.onError(new Throwable(String.format("Received response %d: %s",response.getStatusCode(),response.getStatusText())), null);
+                                handler.onError(new Throwable(String.format("Received response %d: %s",response.getStatusCode(),response.getStatusText())), event);
                             }
-                            return response.getResponseBody();
+                            return response.getResponseBody(); // this return value's never read.
                         }
 
                         @Override
