@@ -87,6 +87,8 @@ class HttpSender implements EventSender
 
     private Request createPostRequest(Event event)
     {
+        //TODO right now we can only send SMILE. Can't send plain JSON
+
         byte[] serializedEvent = event.getSerializedEvent();
         AsyncHttpClient.BoundRequestBuilder requestBuilder = client.preparePost(collectorURI)
                 .addHeader("Content-Length", String.valueOf(serializedEvent.length))
