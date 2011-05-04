@@ -21,6 +21,7 @@ import com.ning.metrics.serialization.writer.CallbackHandler;
 import org.eclipse.jetty.server.*;
 import org.joda.time.DateTime;
 import org.eclipse.jetty.server.nio.SelectChannelConnector;
+import org.skife.config.ConfigurationObjectFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testng.Assert;
@@ -70,15 +71,10 @@ public class TestHttpSender
         };
         errorServer.addConnector(listener);
 
+        System.setProperty("eventtracker.collector.port",Integer.toString(port));
+        EventTrackerConfig config = new ConfigurationObjectFactory(System.getProperties()).build(EventTrackerConfig.class);
         // Set up sender
-        sender = new HttpSender(new EventTrackerConfig()
-        {
-            @Override
-            public int getCollectorPort()
-            {
-                return port;
-            }
-        });
+        sender = new HttpSender(config);
         failureCallbackHandler = new CallbackHandler()
         {
             @Override

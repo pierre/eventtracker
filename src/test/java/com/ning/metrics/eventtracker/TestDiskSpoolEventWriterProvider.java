@@ -9,6 +9,7 @@ import com.ning.metrics.serialization.thrift.ThriftField;
 import com.ning.metrics.serialization.writer.CallbackHandler;
 import com.ning.metrics.serialization.writer.DiskSpoolEventWriter;
 import org.joda.time.DateTime;
+import org.skife.config.ConfigurationObjectFactory;
 import org.testng.Assert;
 import org.testng.annotations.AfterTest;
 import org.testng.annotations.BeforeTest;
@@ -34,8 +35,8 @@ public class TestDiskSpoolEventWriterProvider
     @BeforeTest(alwaysRun = true)
     public void setUp() throws Exception
     {
-        config = new EventTrackerConfig();
-        config.setSpoolDirectoryName(tmpDir.getAbsolutePath());
+        System.setProperty("eventtracker.diskspool.path",tmpDir.getAbsolutePath());
+        config = new ConfigurationObjectFactory(System.getProperties()).build(EventTrackerConfig.class);
     }
 
     @AfterTest

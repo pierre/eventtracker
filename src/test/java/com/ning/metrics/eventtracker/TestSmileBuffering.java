@@ -33,6 +33,7 @@ import org.codehaus.jackson.smile.SmileFactory;
 import org.codehaus.jackson.smile.SmileGenerator;
 import org.codehaus.jackson.smile.SmileParser;
 import org.joda.time.DateTime;
+import org.skife.config.ConfigurationObjectFactory;
 import org.testng.Assert;
 import org.testng.annotations.AfterTest;
 import org.testng.annotations.BeforeTest;
@@ -55,8 +56,8 @@ public class TestSmileBuffering
     @BeforeTest(alwaysRun = true)
     private void setupController() throws IOException
     {
-        final EventTrackerConfig config = new EventTrackerConfig();
-        config.setSpoolDirectoryName("/tmp/eventtracker");
+        System.setProperty("eventtracker.diskspool.path","/tmp/eventtracker");
+        final EventTrackerConfig config = new ConfigurationObjectFactory(System.getProperties()).build(EventTrackerConfig.class);
         sender = new MockCollectorSender();
 
         Injector injector = Guice.createInjector(new AbstractModule()
