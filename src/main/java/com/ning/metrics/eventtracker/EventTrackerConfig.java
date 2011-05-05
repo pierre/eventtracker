@@ -16,8 +16,8 @@
 
 package com.ning.metrics.eventtracker;
 
-import com.ning.metrics.serialization.util.Managed;
 import org.skife.config.Config;
+import org.weakref.jmx.Managed;
 
 public class EventTrackerConfig
 {

@@ -18,11 +18,11 @@ package com.ning.metrics.eventtracker;
 
 import com.ning.metrics.serialization.event.Event;
 import com.ning.metrics.serialization.event.SmileBucketEvent;
-import com.ning.metrics.serialization.util.Managed;
 import com.ning.metrics.serialization.writer.CallbackHandler;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.log4j.Logger;
 import org.apache.thrift.transport.TTransportException;
+import org.weakref.jmx.Managed;
 import scribe.thrift.LogEntry;
 
 import java.io.ByteArrayOutputStream;

@@ -17,7 +17,11 @@
 package com.ning.metrics.eventtracker;
 
 import com.google.inject.Inject;
-import com.ning.http.client.*;
+import com.ning.http.client.AsyncCompletionHandler;
+import com.ning.http.client.AsyncHttpClient;
+import com.ning.http.client.AsyncHttpClientConfig;
+import com.ning.http.client.Request;
+import com.ning.http.client.Response;
 import com.ning.metrics.serialization.event.Event;
 import com.ning.metrics.serialization.writer.CallbackHandler;
 
@@ -40,11 +44,20 @@ class HttpSender implements EventSender
         // the event encoding type is determined by the Event's writeExternal() method.
         httpContentType = EventEncodingType.valueOf(config.getHttpEventEncodingType()).toString();
         AsyncHttpClientConfig clientConfig = new AsyncHttpClientConfig.Builder()
-                .setIdleConnectionInPoolTimeoutInMs(DEFAULT_IDLE_CONNECTION_IN_POOL_TIMEOUT_IN_MS)
-                .setConnectionTimeoutInMs(100)
-                .setMaximumConnectionsPerHost(-1) // unlimited connections
-                .build();
+            .setIdleConnectionInPoolTimeoutInMs(DEFAULT_IDLE_CONNECTION_IN_POOL_TIMEOUT_IN_MS)
+            .setConnectionTimeoutInMs(100)
+            .setMaximumConnectionsPerHost(-1) // unlimited connections
+            .build();
         client = new AsyncHttpClient(clientConfig);
+
+        Runtime.getRuntime().addShutdownHook(new Thread()
+        {
+            @Override
+            public void run()
+            {
+                closeClient();
+            }
+        });
     }
 
     @Override
@@ -53,33 +66,32 @@ class HttpSender implements EventSender
         // Submit the event
         try {
             client.executeRequest(createPostRequest(event),
-                    new AsyncCompletionHandler<String>()
+                new AsyncCompletionHandler<String>()
+                {
+                    @Override
+                    public String onCompleted(Response response) throws Exception
                     {
-                        @Override
-                        public String onCompleted(Response response) throws Exception
-                        {
-                            if (response.getStatusCode() == 202) {
-                                handler.onSuccess(event);
-                            }
-                            else {
-                                handler.onError(new Throwable(String.format("Received response %d: %s",response.getStatusCode(),response.getStatusText())), event);
-                            }
-                            return response.getResponseBody(); // this return value's never read.
+                        if (response.getStatusCode() == 202) {
+                            handler.onSuccess(event);
                         }
+                        else {
+                            handler.onError(new Throwable(String.format("Received response %d: %s", response.getStatusCode(), response.getStatusText())), event);
+                        }
+                        return response.getResponseBody(); // this return value's never read.
+                    }
 
-                        @Override
-                        public void onThrowable(Throwable t)
-                        {
-                            handler.onError(t, event);
-                        }
-                    });
+                    @Override
+                    public void onThrowable(Throwable t)
+                    {
+                        handler.onError(t, event);
+                    }
+                });
         }
         catch (IOException e) {
             handler.onError(new Throwable(e), event);
         }
     }
 
-    // TODO when should we close this?
     public void closeClient()
     {
         client.close();
@@ -88,13 +100,12 @@ class HttpSender implements EventSender
     private Request createPostRequest(Event event)
     {
         //TODO right now we can only send SMILE. Can't send plain JSON
-
         byte[] serializedEvent = event.getSerializedEvent();
         AsyncHttpClient.BoundRequestBuilder requestBuilder = client.preparePost(collectorURI)
-                .addHeader("Content-Length", String.valueOf(serializedEvent.length))
-                .addHeader("Content-Type", httpContentType)
-                .setBody(serializedEvent)
-                .addQueryParameter("name", event.getName());
+            .addHeader("Content-Length", String.valueOf(serializedEvent.length))
+            .addHeader("Content-Type", httpContentType)
+            .setBody(serializedEvent)
+            .addQueryParameter("name", event.getName());
 
         if (event.getEventDateTime() != null) {
             requestBuilder.addQueryParameter("date", event.getEventDateTime().toString());

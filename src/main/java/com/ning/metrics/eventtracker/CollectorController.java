@@ -18,9 +18,9 @@ package com.ning.metrics.eventtracker;
 
 import com.google.inject.Inject;
 import com.ning.metrics.serialization.event.Event;
-import com.ning.metrics.serialization.util.Managed;
 import com.ning.metrics.serialization.writer.EventWriter;
 import org.apache.log4j.Logger;
+import org.weakref.jmx.Managed;
 
 import java.io.IOException;
 import java.util.concurrent.atomic.AtomicLong;
