@@ -70,6 +70,12 @@
             <optional>true</optional>
             <!-- We provide a factory at least for the Scribe controller -->
         </dependency>
+        <dependency><!-- Needed by jmxutils -->
+            <groupId>com.google.inject.extensions</groupId>
+            <artifactId>guice-multibindings</artifactId>
+            <version>2.0</version>
+            <scope>runtime</scope>
+        </dependency>
         <dependency>
             <groupId>com.ning</groupId>
             <artifactId>async-http-client</artifactId>
