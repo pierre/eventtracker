@@ -1,6 +1,5 @@
 package com.ning.metrics.eventtracker;
 
-import com.google.inject.AbstractModule;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
 import com.ning.metrics.serialization.event.Event;
@@ -13,10 +12,8 @@ import org.testng.annotations.AfterTest;
 import org.testng.annotations.BeforeTest;
 import org.testng.annotations.Test;
 
-import javax.management.MBeanServer;
 import java.io.File;
 import java.io.IOException;
-import java.lang.management.ManagementFactory;
 import java.util.HashMap;
 
 public class TestCollectorController
@@ -38,18 +35,8 @@ public class TestCollectorController
         eventMap.put("bleh", 12);
         event = new SmileEnvelopeEvent("myEvent", new DateTime(), eventMap);
 
-        Injector injector = Guice.createInjector(
-            new AbstractModule()
-            {
-                @Override
-                protected void configure()
-                {
-                    // MBeanModules expect an MBeanServer to be bound
-                    binder().bind(MBeanServer.class).toInstance(ManagementFactory.getPlatformMBeanServer());
-                }
-            },
-            new CollectorControllerModule()
-        );
+        // This also tests the eventtracker with properties not exposed via JMX
+        Injector injector = Guice.createInjector(new CollectorControllerModule());
         controller = injector.getInstance(CollectorController.class);
         diskWriter = injector.getInstance(DiskSpoolEventWriter.class); // We have only one
     }

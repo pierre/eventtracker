@@ -21,6 +21,7 @@ import com.google.inject.Injector;
 import com.ning.metrics.serialization.event.SmileEnvelopeEvent;
 import com.ning.metrics.serialization.event.ThriftToThriftEnvelopeEvent;
 import org.joda.time.DateTime;
+import org.skife.config.ConfigurationObjectFactory;
 import org.testng.Assert;
 import org.testng.annotations.AfterTest;
 import org.testng.annotations.BeforeTest;
@@ -91,19 +92,13 @@ public class TestIntegration
     @Test(groups = "slow", enabled = false)
     public void testScribeFactory() throws Exception
     {
-        CollectorController controller = ScribeCollectorFactory.createScribeController(
-            "127.0.0.1",
-            7911,
-            10000,
-            tmpDir.getAbsolutePath(),
-            true,
-            1,
-            "NONE",
-            5,
-            2,
-            10,
-            1
-        );
+        System.setProperty("eventtracker.type", "COLLECTOR");
+        System.setProperty("eventtracker.directory", tmpDir.getAbsolutePath());
+        System.setProperty("eventtracker.collector.host", "127.0.0.1");
+        System.setProperty("eventtracker.collector.port", "8080");
+
+        EventTrackerConfig config = new ConfigurationObjectFactory(System.getProperties()).build(EventTrackerConfig.class);
+        CollectorController controller = ScribeCollectorFactory.createScribeController(config);
 
         fireThriftEvents(controller);
     }

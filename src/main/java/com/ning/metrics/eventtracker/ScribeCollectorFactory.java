@@ -38,116 +38,16 @@ public class ScribeCollectorFactory
 
     public static synchronized CollectorController createScribeController(EventTrackerConfig config) throws IOException
     {
-        return createScribeController(config.getScribeHost(),
-            config.getScribePort(),
-            config.getScribeRefreshRate(),
-            config.getScribeMaxIdleTimeInMinutes(),
-            config.getSpoolDirectoryName(),
-            config.isFlushEnabled(),
-            config.getFlushIntervalInSeconds(),
-            config.getSyncType(),
-            config.getSyncBatchSize(),
-            config.getRateWindowSizeMinutes(),
-            config.getFlushEventQueueSize(),
-            config.getRefreshDelayInSeconds());
-    }
-
-    /**
-     * Initialize the Scribe controller without Guice
-     *
-     * @param scribeHost             Scribe hostname or IP
-     * @param scribePort             Scribe port
-     * @param scribeRefreshRate      Number of messages to send to Scribe before refreshing the connection
-     * @param spoolDirectoryName     Directory name for the spool queue
-     * @param isFlushEnabled         Whether to send events to remote agent
-     * @param flushIntervalInSeconds Delay between flushes (in seconds) to remote agent
-     * @param syncType               type of Sync (NONE, FLUSH or SYNC)
-     * @param syncBatchSize          number of writes to perform before invoking the syncType
-     * @param rateWindowSizeMinutes  event rate window size
-     * @param flushEventQueueSize    Maximum queue size in the temporary spooling area
-     * @param refreshDelayInSeconds  Number of seconds before promoting events from tmp to final spool queue
-     * @return Scribe controller
-     * @throws java.io.IOException if an Exception occurs while trying to create the directory
-     * @see com.ning.metrics.eventtracker.CollectorController
-     * @deprecated As of 3.0.2, replaced by @link #createScribeController(EventTrackerConfig)}
-     */
-    @Deprecated
-    @SuppressWarnings("unused")
-    public static synchronized CollectorController createScribeController(
-        String scribeHost,
-        int scribePort,
-        int scribeRefreshRate,
-        String spoolDirectoryName,
-        boolean isFlushEnabled,
-        long flushIntervalInSeconds,
-        String syncType,
-        int syncBatchSize,
-        int rateWindowSizeMinutes,
-        long flushEventQueueSize,
-        long refreshDelayInSeconds
-    ) throws IOException
-    {
-        return createScribeController(scribeHost, scribePort, scribeRefreshRate, 4, spoolDirectoryName, isFlushEnabled, flushIntervalInSeconds, syncType, syncBatchSize, rateWindowSizeMinutes, flushEventQueueSize, refreshDelayInSeconds);
-    }
-
-    /**
-     * Initialize the Scribe controller without Guice
-     *
-     * @param scribeHost                 Scribe hostname or IP
-     * @param scribePort                 Scribe port
-     * @param scribeRefreshRate          Number of messages to send to Scribe before refreshing the connection
-     * @param scribeMaxIdleTimeInMinutes Number of minutes allowed for the connection to be idle before re-opening it
-     * @param spoolDirectoryName         Directory name for the spool queue
-     * @param isFlushEnabled             Whether to send events to remote agent
-     * @param flushIntervalInSeconds     Delay between flushes (in seconds) to remote agent
-     * @param syncType                   type of Sync (NONE, FLUSH or SYNC)
-     * @param syncBatchSize              number of writes to perform before invoking the syncType
-     * @param rateWindowSizeMinutes      event rate window size
-     * @param flushEventQueueSize        Maximum queue size in the temporary spooling area
-     * @param refreshDelayInSeconds      Number of seconds before promoting events from tmp to final spool queue
-     * @return Scribe controller
-     * @throws java.io.IOException if an Exception occurs while trying to create the directory
-     * @see com.ning.metrics.eventtracker.CollectorController
-     */
-    @SuppressWarnings("unused")
-    public static synchronized CollectorController createScribeController(
-        String scribeHost,
-        int scribePort,
-        int scribeRefreshRate,
-        int scribeMaxIdleTimeInMinutes,
-        String spoolDirectoryName,
-        boolean isFlushEnabled,
-        long flushIntervalInSeconds,
-        String syncType,
-        int syncBatchSize,
-        int rateWindowSizeMinutes,
-        long flushEventQueueSize,
-        long refreshDelayInSeconds
-    ) throws IOException
-    {
         if (singletonController == null) {
-            singletonController = new ScribeCollectorFactory(scribeHost, scribePort, scribeRefreshRate, scribeMaxIdleTimeInMinutes, spoolDirectoryName, isFlushEnabled, flushIntervalInSeconds, syncType, syncBatchSize, rateWindowSizeMinutes, flushEventQueueSize, refreshDelayInSeconds).get();
+            singletonController = new ScribeCollectorFactory(config).get();
         }
 
         return singletonController;
     }
 
-    ScribeCollectorFactory(
-        String scribeHost,
-        int scribePort,
-        int scribeRefreshRate,
-        int scribemaxIdleTimeInMinutes,
-        String spoolDirectoryName,
-        boolean isFlushEnabled,
-        long flushIntervalInSeconds,
-        String syncType,
-        int syncBatchSize,
-        int rateWindowSizeMinutes,
-        long flushEventQueueSize,
-        long refreshDelayInSeconds
-    ) throws IOException
+    ScribeCollectorFactory(EventTrackerConfig config)
     {
-        eventSender = new ScribeSender(new ScribeClientImpl(scribeHost, scribePort), scribeRefreshRate, scribemaxIdleTimeInMinutes);
+        eventSender = new ScribeSender(new ScribeClientImpl(config.getScribeHost(), config.getScribePort()), config.getScribeRefreshRate(), config.getScribeMaxIdleTimeInMinutes());
         FixedManagedJmxExport.export("com.ning.metrics.eventtracker:name=ScribeSender", eventSender);
         eventSender.createConnection();
 
@@ -169,8 +69,10 @@ public class ScribeCollectorFactory
             {
                 // no-op
             }
-        }, spoolDirectoryName, isFlushEnabled, flushIntervalInSeconds, new ScheduledThreadPoolExecutor(1, Executors.defaultThreadFactory()), SyncType.valueOf(syncType), syncBatchSize, rateWindowSizeMinutes);
-        ThresholdEventWriter thresholdEventWriter = new ThresholdEventWriter(eventWriter, flushEventQueueSize, refreshDelayInSeconds);
+        }, config.getSpoolDirectoryName(), config.isFlushEnabled(), config.getFlushIntervalInSeconds(),
+            new ScheduledThreadPoolExecutor(1, Executors.defaultThreadFactory()), SyncType.valueOf(config.getSyncType()),
+            config.getSyncBatchSize(), config.getRateWindowSizeMinutes());
+        ThresholdEventWriter thresholdEventWriter = new ThresholdEventWriter(eventWriter, config.getFlushEventQueueSize(), config.getRefreshDelayInSeconds());
 
         controller = new CollectorController(thresholdEventWriter);
         FixedManagedJmxExport.export("eventtracker:name=CollectorController", controller);
