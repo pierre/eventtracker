@@ -17,24 +17,10 @@
 package com.ning.metrics.eventtracker;
 
 import org.skife.config.Config;
-import org.weakref.jmx.Managed;
+import org.skife.config.Default;
 
-public class EventTrackerConfig
+public interface EventTrackerConfig
 {
-    private String type = "COLLECTOR";
-    private String httpEventEncodingType = "SMILE";
-    private long flushEventQueueSize = 10000;
-    private int refreshDelayInSeconds = 60;
-    private String spoolDirectoryName = "/tmp/eventtracker/diskspool";
-    private boolean flushEnabled = true;
-    private int flushIntervalInSeconds = 60;
-    private String syncType = "NONE";
-    private int syncBatchSize = 50;
-    private int rateWindowSizeMinutes = 5;
-    private int scribePort = 1463;
-    private String scribeHost = "127.0.0.1";
-    private int scribeRefreshRate = 1000000;
-    private int scribeMaxIdleTimeInMinutes = 4;
 
     /**
      * Configure the type of the eventtracker. Valid values are:
@@ -47,11 +33,9 @@ public class EventTrackerConfig
      * @return the type of eventtracker to use
      */
     @Config(value = "eventtracker.type")
-    public String getType()
-    {
-        // config-magic doesn't support enums :(
-        return type;
-    }
+    @Default(value = "COLLECTOR")
+    public String getType();
+    // config-magic doesn't support enums :(
 
     /**
      * Configure the type of the events passed "over the wire". Valid values are:
@@ -65,18 +49,8 @@ public class EventTrackerConfig
      * @return the type of eventtracker to use
      */
     @Config(value = "eventtracker.http.eventEncoding")
-    public String getHttpEventEncodingType()
-    {
-        return httpEventEncodingType;
-    }
-
-    @Managed(description = "Set the event encoding type")
-    public void setHttpEventEncodingType(String httpEventEncodingType)
-    {
-        // test if this throws an error
-        EventEncodingType.valueOf(httpEventEncodingType);
-        this.httpEventEncodingType = httpEventEncodingType;
-    }
+    @Default(value = "SMILE")
+    public String getHttpEventEncodingType();
 
     //------------------- Spooling -------------------//
 
@@ -88,10 +62,8 @@ public class EventTrackerConfig
      * @see com.ning.metrics.serialization.writer.ThresholdEventWriter
      */
     @Config(value = "eventtracker.diskspool.flush-event-queue-size")
-    public long getFlushEventQueueSize()
-    {
-        return flushEventQueueSize;
-    }
+    @Default(value = "10000")
+    public long getFlushEventQueueSize();
 
     /**
      * Maxixum number of seconds before events are promoted from the temporary spooling area to the final spool queue.
@@ -100,10 +72,8 @@ public class EventTrackerConfig
      * @see com.ning.metrics.serialization.writer.ThresholdEventWriter
      */
     @Config(value = "eventtracker.diskspool.refresh-delay-seconds")
-    public int getRefreshDelayInSeconds()
-    {
-        return refreshDelayInSeconds;
-    }
+    @Default(value = "60")
+    public int getRefreshDelayInSeconds();
 
     /**
      * Directory for the Event Tracker to store events it can not send immediately
@@ -111,10 +81,8 @@ public class EventTrackerConfig
      * @return the directory path
      */
     @Config(value = "eventtracker.diskspool.path")
-    public String getSpoolDirectoryName()
-    {
-        return spoolDirectoryName;
-    }
+    @Default(value = "/tmp/eventtracker/diskspool")
+    public String getSpoolDirectoryName();
 
     /**
      * If false, events will not be periodically sent
@@ -122,10 +90,8 @@ public class EventTrackerConfig
      * @return whether to send events buffered locally
      */
     @Config(value = "eventtracker.diskspool.enabled")
-    public boolean isFlushEnabled()
-    {
-        return flushEnabled;
-    }
+    @Default(value = "true")
+    public boolean isFlushEnabled();
 
     /**
      * Delay between flushes (in seconds)
@@ -133,10 +99,8 @@ public class EventTrackerConfig
      * @return delay between flushes to the remote server
      */
     @Config(value = "eventtracker.diskspool.flush-interval-seconds")
-    public int getFlushIntervalInSeconds()
-    {
-        return flushIntervalInSeconds;
-    }
+    @Default(value = "60")
+    public int getFlushIntervalInSeconds();
 
     /**
      * Type of outputter to use when spooling: NONE, FLUSH, or SYNC
@@ -144,10 +108,8 @@ public class EventTrackerConfig
      * @return the String representation of the SyncType
      */
     @Config(value = "eventtracker.diskspool.synctype")
-    public String getSyncType()
-    {
-        return syncType;
-    }
+    @Default(value = "NONE")
+    public String getSyncType();
 
     /**
      * Batch size to use for the outputter.
@@ -156,28 +118,20 @@ public class EventTrackerConfig
      * @return the batch size for writes
      */
     @Config(value = "eventtracker.diskspool.batch-size")
-    public int getSyncBatchSize()
-    {
-        return syncBatchSize;
-    }
+    @Default(value = "50")
+    public int getSyncBatchSize();
 
     @Config(value = "eventtracker.event-end-point.rate-window-size-minutes")
-    public int getRateWindowSizeMinutes()
-    {
-        return rateWindowSizeMinutes;
-    }
+    @Default(value = "5")
+    public int getRateWindowSizeMinutes();
 
     @Config(value = "eventtracker.collector.host")
-    public String getCollectorHost()
-    {
-        return "127.0.0.1";
-    }
+    @Default(value = "127.0.0.1")
+    public String getCollectorHost();
 
     @Config(value = "eventtracker.collector.port")
-    public int getCollectorPort()
-    {
-        return 8080;
-    }
+    @Default(value = "8080")
+    public int getCollectorPort();
 
     //------------------- Scribe Sender -------------------//
 
@@ -187,10 +141,8 @@ public class EventTrackerConfig
      * @return the Scribe port to use
      */
     @Config(value = "eventtracker.scribe.port")
-    public int getScribePort()
-    {
-        return scribePort;
-    }
+    @Default(value = "1463")
+    public int getScribePort();
 
     /**
      * Scribe host
@@ -198,10 +150,8 @@ public class EventTrackerConfig
      * @return the hostname or IP of the Scribe host to use
      */
     @Config(value = "eventtracker.scribe.host")
-    public String getScribeHost()
-    {
-        return scribeHost;
-    }
+    @Default(value = "127.0.0.1")
+    public String getScribeHost();
 
     /**
      * Number of messages to send to Scribe before refreshing the connection
@@ -210,10 +160,8 @@ public class EventTrackerConfig
      * @return the threshold before reconnecting to Scribe
      */
     @Config(value = "eventtracker.scribe.refresh_rate")
-    public int getScribeRefreshRate()
-    {
-        return scribeRefreshRate; // 1 Million
-    }
+    @Default(value = "1000000")
+    public int getScribeRefreshRate();
 
     /**
      * Number of minutes allowed for the connection to be idle before re-opening it
@@ -222,73 +170,6 @@ public class EventTrackerConfig
      * @return the number of minutes before reconnecting to Scribe
      */
     @Config(value = "eventtracker.scribe.max-idle-minutes")
-    public int getScribeMaxIdleTimeInMinutes()
-    {
-        return scribeMaxIdleTimeInMinutes;
-    }
-
-    public void setFlushEnabled(boolean flushEnabled)
-    {
-        this.flushEnabled = flushEnabled;
-    }
-
-    public void setFlushEventQueueSize(long flushEventQueueSize)
-    {
-        this.flushEventQueueSize = flushEventQueueSize;
-    }
-
-    public void setFlushIntervalInSeconds(int flushIntervalInSeconds)
-    {
-        this.flushIntervalInSeconds = flushIntervalInSeconds;
-    }
-
-    public void setRateWindowSizeMinutes(int rateWindowSizeMinutes)
-    {
-        this.rateWindowSizeMinutes = rateWindowSizeMinutes;
-    }
-
-    public void setRefreshDelayInSeconds(int refreshDelayInSeconds)
-    {
-        this.refreshDelayInSeconds = refreshDelayInSeconds;
-    }
-
-    public void setScribeHost(String scribeHost)
-    {
-        this.scribeHost = scribeHost;
-    }
-
-    public void setScribePort(int scribePort)
-    {
-        this.scribePort = scribePort;
-    }
-
-    public void setScribeRefreshRate(int scribeRefreshRate)
-    {
-        this.scribeRefreshRate = scribeRefreshRate;
-    }
-
-    public void setSpoolDirectoryName(String spoolDirectoryName)
-    {
-        this.spoolDirectoryName = spoolDirectoryName;
-    }
-
-    public void setSyncBatchSize(int syncBatchSize)
-    {
-        this.syncBatchSize = syncBatchSize;
-    }
-
-    public void setSyncType(String syncType)
-    {
-        this.syncType = syncType;
-    }
-
-    public void setType(String type)
-    {
-        this.type = type;
-    }
-
-    public void setScribeMaxIdleTimeInMinutes(int scribeMaxIdleTimeInMinutes)
-    {
-        this.scribeMaxIdleTimeInMinutes = scribeMaxIdleTimeInMinutes;
-    }
+    @Default(value = "4")
+    public int getScribeMaxIdleTimeInMinutes();
 }

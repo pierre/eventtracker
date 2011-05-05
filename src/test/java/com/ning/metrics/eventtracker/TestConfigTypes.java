@@ -100,7 +100,8 @@ public class TestConfigTypes
         //Assert.assertEquals(EventEncodingType.valueOf(eventTrackerConfig.getHttpEventEncodingType()), EventEncodingType.SMILE);
 
         try {
-            eventTrackerConfig.setHttpEventEncodingType("TYPO");
+            p.put("eventtracker.http.eventEncoding", "TYPO");
+            eventTrackerConfig = new ConfigurationObjectFactory(p).build(EventTrackerConfig.class);
             EventEncodingType.valueOf(eventTrackerConfig.getHttpEventEncodingType());
             Assert.fail("expected exception");
         }
