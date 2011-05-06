@@ -24,10 +24,10 @@
         </layout>
     </appender>
     <logger name="com.ning.metrics">
-        <level value="debug"/>
+        <level value="info"/>
     </logger>
     <logger name="com.ning.http.client">
-        <level value="debug"/>
+        <level value="info"/>
     </logger>
     <root>
         <priority value="info"/>

@@ -86,7 +86,7 @@ public class TestIntegration
 
         fireThriftEvents(controller);
 
-        sender.shutdown();
+        sender.close();
     }
 
     @Test(groups = "slow", enabled = false)

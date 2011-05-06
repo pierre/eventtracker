@@ -22,4 +22,6 @@ import com.ning.metrics.serialization.writer.CallbackHandler;
 interface EventSender
 {
     public void send(Event event, CallbackHandler handler);
+
+    public void close();
 }

@@ -30,4 +30,10 @@ class NoLoggingSender implements EventSender
         // no-op
         handler.onSuccess(event);
     }
+
+    @Override
+    public void close()
+    {
+        // no-op
+    }
 }

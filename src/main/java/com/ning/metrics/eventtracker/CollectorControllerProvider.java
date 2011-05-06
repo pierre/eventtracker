@@ -31,12 +31,14 @@ public class CollectorControllerProvider implements Provider<CollectorController
 
     private final ScheduledExecutorService executor;
     private final DiskSpoolEventWriter eventWriter;
+    private final EventSender eventSender;
 
     @Inject
-    public CollectorControllerProvider(ScheduledExecutorService executor, DiskSpoolEventWriter eventWriter)
+    public CollectorControllerProvider(ScheduledExecutorService executor, DiskSpoolEventWriter eventWriter, EventSender eventSender)
     {
         this.executor = executor;
         this.eventWriter = eventWriter;
+        this.eventSender = eventSender;
     }
 
     @Override
@@ -50,39 +52,47 @@ public class CollectorControllerProvider implements Provider<CollectorController
             @Override
             public void run()
             {
-                // Don't accept events anymore
-                controller.setAcceptEvents(false);
-
-                // Stop the periodic flusher to the final spool area
-                try {
-                    executor.shutdown();
-                    executor.awaitTermination(15, TimeUnit.SECONDS);
-                }
-                catch (InterruptedException e) {
-                    log.warn("Interrupted while trying to shutdown the disk flusher", e);
-                }
-
-                // Commit the current file
-                try {
-                    eventWriter.forceCommit();
-                }
-                catch (IOException e) {
-                    log.warn("IOExeption while committing current file", e);
-                }
-
-                // Give quarantined events a last chance
-                eventWriter.processQuarantinedFiles();
-
-                // Flush events to remote collectors
-                try {
-                    eventWriter.flush();
-                }
-                catch (IOException e) {
-                    log.warn("IOException while flushing last files to the collectors", e);
-                }
+                mainEventTrackerShutdownHook(executor, eventWriter, eventSender, controller);
             }
         });
 
         return controller;
+    }
+
+    protected static void mainEventTrackerShutdownHook(ScheduledExecutorService executor, DiskSpoolEventWriter eventWriter, EventSender eventSender, CollectorController controller)
+    {
+        // Don't accept events anymore
+        controller.setAcceptEvents(false);
+
+        // Stop the periodic flusher to the final spool area
+        try {
+            executor.shutdown();
+            executor.awaitTermination(15, TimeUnit.SECONDS);
+        }
+        catch (InterruptedException e) {
+            log.warn("Interrupted while trying to shutdown the disk flusher", e);
+        }
+
+        // Commit the current file
+        try {
+            eventWriter.forceCommit();
+        }
+        catch (IOException e) {
+            log.warn("IOExeption while committing current file", e);
+        }
+
+        // Give quarantined events a last chance
+        eventWriter.processQuarantinedFiles();
+
+        // Flush events to remote collectors
+        try {
+            eventWriter.flush();
+        }
+        catch (IOException e) {
+            log.warn("IOException while flushing last files to the collectors", e);
+        }
+
+        // Close the sender
+        eventSender.close();
     }
 }

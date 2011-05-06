@@ -26,6 +26,7 @@ import com.ning.metrics.serialization.event.Event;
 import com.ning.metrics.serialization.writer.CallbackHandler;
 
 import java.io.IOException;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 class HttpSender implements EventSender
 {
@@ -35,6 +36,7 @@ class HttpSender implements EventSender
     private final String collectorURI;
     private final String httpContentType;
     private final AsyncHttpClient client;
+    private final AtomicBoolean isClosed = new AtomicBoolean(true);
 
     @Inject
     public HttpSender(EventTrackerConfig config)
@@ -49,15 +51,7 @@ class HttpSender implements EventSender
             .setMaximumConnectionsPerHost(-1) // unlimited connections
             .build();
         client = new AsyncHttpClient(clientConfig);
-
-        Runtime.getRuntime().addShutdownHook(new Thread()
-        {
-            @Override
-            public void run()
-            {
-                closeClient();
-            }
-        });
+        isClosed.set(false);
     }
 
     @Override
@@ -92,9 +86,13 @@ class HttpSender implements EventSender
         }
     }
 
-    public void closeClient()
+    @Override
+    public synchronized void close()
     {
-        client.close();
+        if (client != null && !isClosed.get()) {
+            client.close();
+            isClosed.set(true);
+        }
     }
 
     private Request createPostRequest(Event event)

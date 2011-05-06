@@ -108,7 +108,7 @@ public class TestHttpSender
     @AfterClass(alwaysRun = true)
     public void tearDownGlobal() throws Exception
     {
-        sender.closeClient();
+        sender.close();
     }
 
     @Test

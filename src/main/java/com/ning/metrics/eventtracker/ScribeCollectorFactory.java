@@ -85,6 +85,6 @@ public class ScribeCollectorFactory
 
     public static void shutdown()
     {
-        eventSender.shutdown();
+        eventSender.close();
     }
 }

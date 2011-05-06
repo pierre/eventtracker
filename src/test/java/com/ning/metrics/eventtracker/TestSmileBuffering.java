@@ -73,6 +73,7 @@ public class TestSmileBuffering
                 bind(ScheduledExecutorService.class).toInstance(new ScheduledThreadPoolExecutor(1, Executors.defaultThreadFactory()));
                 bind(DiskSpoolEventWriter.class).toProvider(DiskSpoolEventWriterProvider.class);
                 bind(EventWriter.class).toProvider(ThresholdEventWriterProvider.class);
+                bind(CollectorController.class).toProvider(CollectorControllerProvider.class).asEagerSingleton();
             }
         });
 

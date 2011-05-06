@@ -57,6 +57,7 @@ public class ScribeSender implements EventSender
     private int messagesToSendBeforeReconnecting = 0;
 
     private final AtomicBoolean sleeping = new AtomicBoolean(true);
+    private final AtomicBoolean isClosed = new AtomicBoolean(true);
 
     public ScribeSender(ScribeClient scribeClient, int messagesToSendBeforeReconnecting, int maxIdleTimeInMinutes)
     {
@@ -90,6 +91,7 @@ public class ScribeSender implements EventSender
                 connectionRetries.incrementAndGet();
                 scribeClient.closeLogger();
                 scribeClient.openLogger();
+                isClosed.set(false);
 
                 log.info("Connection to Scribe established");
             }
@@ -106,10 +108,12 @@ public class ScribeSender implements EventSender
     /**
      * Disconnect from Scribe for good.
      */
-    public void shutdown()
+    @Override
+    public synchronized void close()
     {
-        if (scribeClient != null) {
+        if (scribeClient != null && !isClosed.get()) {
             scribeClient.closeLogger();
+            isClosed.set(true);
         }
     }
 

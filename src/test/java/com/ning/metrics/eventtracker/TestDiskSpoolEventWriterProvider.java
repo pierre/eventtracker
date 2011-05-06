@@ -35,7 +35,7 @@ public class TestDiskSpoolEventWriterProvider
     @BeforeTest(alwaysRun = true)
     public void setUp() throws Exception
     {
-        System.setProperty("eventtracker.diskspool.path",tmpDir.getAbsolutePath());
+        System.setProperty("eventtracker.diskspool.path", tmpDir.getAbsolutePath());
         config = new ConfigurationObjectFactory(System.getProperties()).build(EventTrackerConfig.class);
     }
 
@@ -67,8 +67,13 @@ public class TestDiskSpoolEventWriterProvider
                 Assert.assertEquals(event.getName(), EVENT_NAME);
                 Assert.assertEquals(((SmileBucketEvent) event).getNumberOfEvent(), numberOfSmileEventsToSend);
                 // SmileBucketEvents don't have dateTimes
-                Assert.assertEquals(event.getEventDateTime(),null);
+                Assert.assertEquals(event.getEventDateTime(), null);
                 sendCalls.incrementAndGet();
+            }
+
+            @Override
+            public void close()
+            {
             }
         });
 
@@ -113,8 +118,13 @@ public class TestDiskSpoolEventWriterProvider
                 Assert.assertTrue(event instanceof ThriftEnvelopeEvent);
                 Assert.assertEquals(event.getName(), EVENT_NAME);
                 Assert.assertEquals(((ThriftEnvelope) event.getData()).getPayload().size(), 2);
-                Assert.assertEquals(event.getEventDateTime().getMillis(),EVENT_DATE_TIME.getMillis());
+                Assert.assertEquals(event.getEventDateTime().getMillis(), EVENT_DATE_TIME.getMillis());
                 sendCalls.incrementAndGet();
+            }
+
+            @Override
+            public void close()
+            {
             }
         });
 
