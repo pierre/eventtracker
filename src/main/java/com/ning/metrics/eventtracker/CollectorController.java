@@ -16,13 +16,13 @@
 
 package com.ning.metrics.eventtracker;
 
-import com.google.inject.Inject;
 import com.ning.metrics.serialization.event.Event;
 import com.ning.metrics.serialization.writer.EventWriter;
 import org.apache.log4j.Logger;
 import org.weakref.jmx.Managed;
 
 import java.io.IOException;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
 
 /**
@@ -38,8 +38,8 @@ public class CollectorController
 
     private final AtomicLong eventsReceived = new AtomicLong(0);
     private final AtomicLong eventsLost = new AtomicLong(0);
+    private final AtomicBoolean acceptEvents = new AtomicBoolean(true);
 
-    @Inject
     public CollectorController(EventWriter eventWriter)
     {
         this.eventWriter = eventWriter;
@@ -54,6 +54,10 @@ public class CollectorController
      */
     public void offerEvent(final Event event) throws IOException
     {
+        if (!acceptEvents.get()) {
+            return;
+        }
+
         eventsReceived.incrementAndGet();
 
         try {
@@ -66,6 +70,17 @@ public class CollectorController
 
             throw e;
         }
+    }
+
+    public void setAcceptEvents(boolean accept)
+    {
+        acceptEvents.set(accept);
+    }
+
+    @Managed(description = "Whether the eventtracker library accepts events")
+    public AtomicBoolean isAcceptEvents()
+    {
+        return acceptEvents;
     }
 
     @Managed(description = "Number of events received")

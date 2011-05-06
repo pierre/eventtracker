@@ -21,7 +21,6 @@ import org.skife.config.Default;
 
 public interface EventTrackerConfig
 {
-
     /**
      * Configure the type of the eventtracker. Valid values are:
      * <ul>
