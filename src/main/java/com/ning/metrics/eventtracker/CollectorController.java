@@ -78,9 +78,9 @@ public class CollectorController
     }
 
     @Managed(description = "Whether the eventtracker library accepts events")
-    public AtomicBoolean isAcceptEvents()
+    public boolean isAcceptEvents()
     {
-        return acceptEvents;
+        return acceptEvents.get();
     }
 
     @Managed(description = "Number of events received")
