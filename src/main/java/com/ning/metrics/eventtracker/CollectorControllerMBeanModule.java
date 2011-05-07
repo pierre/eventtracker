@@ -17,6 +17,7 @@
 package com.ning.metrics.eventtracker;
 
 import com.google.inject.AbstractModule;
+import org.skife.config.ConfigurationObjectFactory;
 import org.weakref.jmx.guice.ExportBuilder;
 import org.weakref.jmx.guice.MBeanModule;
 
@@ -38,7 +39,17 @@ public class CollectorControllerMBeanModule extends AbstractModule
     {
         ExportBuilder builder = MBeanModule.newExporter(binder());
 
-        builder.export(ScribeSender.class).as("eventtracker:name=ScribeSender");
+        final EventTrackerConfig eventTrackerConfig = new ConfigurationObjectFactory(System.getProperties()).build(EventTrackerConfig.class);
+        CollectorControllerModule.Type type = CollectorControllerModule.Type.valueOf(eventTrackerConfig.getType());
+
+        switch (type) {
+            case SCRIBE:
+                builder.export(ScribeSender.class).as("eventtracker:name=ScribeSender");
+                break;
+            default:
+                break;
+        }
+
         builder.export(CollectorController.class).as("eventtracker:name=CollectorController");
     }
 }
