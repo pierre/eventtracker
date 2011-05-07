@@ -47,7 +47,7 @@ public class TestCollectorControllerProvider
     @Test
     public void testGet() throws Exception
     {
-        assertTrue(controller.isAcceptEvents().get());
+        assertTrue(controller.isAcceptEvents());
         controller.offerEvent(new StubEvent());
         assertEquals(((MockCollectorSender) eventSender).getSuccessCount(), 0);
 
@@ -56,7 +56,7 @@ public class TestCollectorControllerProvider
         // no-op
         controller.offerEvent(new StubEvent());
 
-        assertFalse(controller.isAcceptEvents().get());
+        assertFalse(controller.isAcceptEvents());
         assertTrue(executor.isTerminated());
 
         assertEquals(((MockCollectorSender) eventSender).getSuccessCount(), 1);
