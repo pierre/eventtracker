@@ -61,9 +61,13 @@ public class CollectorControllerProvider implements Provider<CollectorController
 
     protected static void mainEventTrackerShutdownHook(ScheduledExecutorService executor, DiskSpoolEventWriter eventWriter, EventSender eventSender, CollectorController controller)
     {
+        log.info("Starting main shutdown sequence");
+
+        log.info("Stop accepting new events");
         // Don't accept events anymore
         controller.setAcceptEvents(false);
 
+        log.info("Shut down the writers service");
         // Stop the periodic flusher to the final spool area
         try {
             executor.shutdown();
@@ -73,6 +77,7 @@ public class CollectorControllerProvider implements Provider<CollectorController
             log.warn("Interrupted while trying to shutdown the disk flusher", e);
         }
 
+        log.info("Flush current open file to disk");
         // Commit the current file
         try {
             eventWriter.forceCommit();
@@ -81,9 +86,11 @@ public class CollectorControllerProvider implements Provider<CollectorController
             log.warn("IOExeption while committing current file", e);
         }
 
+        log.info("Promote quarantined files to final spool area");
         // Give quarantined events a last chance
         eventWriter.processQuarantinedFiles();
 
+        log.info("Flush all local files");
         // Flush events to remote collectors
         try {
             eventWriter.flush();
@@ -92,7 +99,10 @@ public class CollectorControllerProvider implements Provider<CollectorController
             log.warn("IOException while flushing last files to the collectors", e);
         }
 
+        log.info("Close event sender");
         // Close the sender
         eventSender.close();
+
+        log.info("Main shutdown sequence has terminated");
     }
 }
