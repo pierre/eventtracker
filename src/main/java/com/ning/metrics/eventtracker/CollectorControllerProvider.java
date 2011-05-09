@@ -25,7 +25,7 @@ import java.io.IOException;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
-public class CollectorControllerProvider implements Provider<CollectorController>
+class CollectorControllerProvider implements Provider<CollectorController>
 {
     private static final Logger log = Logger.getLogger(CollectorControllerProvider.class);
 

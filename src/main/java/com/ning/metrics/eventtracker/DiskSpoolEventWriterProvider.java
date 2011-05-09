@@ -27,7 +27,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.concurrent.ScheduledExecutorService;
 
-public class DiskSpoolEventWriterProvider implements Provider<DiskSpoolEventWriter>
+class DiskSpoolEventWriterProvider implements Provider<DiskSpoolEventWriter>
 {
     private final EventTrackerConfig config;
     private final EventSender eventSender;
