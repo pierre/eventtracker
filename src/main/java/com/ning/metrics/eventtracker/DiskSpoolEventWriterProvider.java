@@ -18,17 +18,13 @@ package com.ning.metrics.eventtracker;
 
 import com.google.inject.Inject;
 import com.google.inject.Provider;
-import com.ning.metrics.serialization.event.Event;
-import com.ning.metrics.serialization.event.SmileEnvelopeEvent;
-import com.ning.metrics.serialization.smile.SmileEnvelopeEventsToSmileBucketEvents;
 import com.ning.metrics.serialization.writer.CallbackHandler;
 import com.ning.metrics.serialization.writer.DiskSpoolEventWriter;
-import com.ning.metrics.serialization.writer.EventHandler;
+import com.ning.metrics.serialization.writer.FileHandler;
 import com.ning.metrics.serialization.writer.SyncType;
 
+import java.io.File;
 import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.util.ArrayList;
 import java.util.concurrent.ScheduledExecutorService;
 
 public class DiskSpoolEventWriterProvider implements Provider<DiskSpoolEventWriter>
@@ -50,63 +46,20 @@ public class DiskSpoolEventWriterProvider implements Provider<DiskSpoolEventWrit
     }
 
     /**
-     * Provides an instance of {@code T}. Must never return {@code null}.
+     * Provides an instance of a DiskSpoolEventWriter, which forwards local buffered events (in files) to the collector,
+     * via an EventSender.
      *
-     * @throws com.google.inject.OutOfScopeException
-     *          when an attempt is made to access a scoped object while the scope
-     *          in question is not currently active
-     * @throws com.google.inject.ProvisionException
-     *          if an instance cannot be provided. Such exceptions include messages
-     *          and throwables to describe why provision failed.
+     * @return instance of a DiskSpoolEventWriter
      */
     @Override
     public DiskSpoolEventWriter get()
     {
-        return new DiskSpoolEventWriter(new EventHandler()
+        return new DiskSpoolEventWriter(new FileHandler()
         {
             @Override
-            public void handle(ObjectInputStream objectInputStream, CallbackHandler handler) throws ClassNotFoundException, IOException
+            public void handle(final File file, CallbackHandler handler) throws IOException
             {
-                ArrayList<SmileEnvelopeEvent> smileEnvelopeEvents = new ArrayList<SmileEnvelopeEvent>();
-                ArrayList<Event> miscEvents = new ArrayList<Event>();
-
-                // extract all events
-                // all errors are thrown here. before events are sent.
-
-                while (objectInputStream.read() != -1) {
-                    Event event = (Event) objectInputStream.readObject();
-
-                    // TODO This is suboptimal as it requires a dependency to com.ning:metrics-serialization
-                    // How could we be smarter here? Specific Smile DiskSpoolEventWriter, manually configured by the user?
-                    if (event instanceof SmileEnvelopeEvent) {
-                        smileEnvelopeEvents.add((SmileEnvelopeEvent) event);
-                    }
-                    else {
-                        // Not a SmileEnvelopeEvent: it is either already a SmileBucketEvent or a ThriftEnvelopeEvent.
-                        // In both cases, don't buffer.
-                        miscEvents.add(event);
-                    }
-                }
-
-                objectInputStream.close();
-
-                // send all events
-
-                for (Event event : miscEvents) {
-                    eventSender.send(event, handler);
-                }
-
-                if (smileEnvelopeEvents.size() > 0) {
-                    for (Event event : SmileEnvelopeEventsToSmileBucketEvents.extractEvents(smileEnvelopeEvents)) {
-                        eventSender.send(event, handler);
-                    }
-                }
-            }
-
-            @Override
-            public void rollback() throws IOException
-            {
-                // no-op
+                eventSender.send(file, handler);
             }
         }, config.getSpoolDirectoryName(), config.isFlushEnabled(), config.getFlushIntervalInSeconds(), executor,
             SyncType.valueOf(config.getSyncType()), config.getSyncBatchSize(), config.getRateWindowSizeMinutes());

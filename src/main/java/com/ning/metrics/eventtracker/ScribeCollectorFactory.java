@@ -16,16 +16,15 @@
 
 package com.ning.metrics.eventtracker;
 
-import com.ning.metrics.serialization.event.Event;
 import com.ning.metrics.serialization.util.FixedManagedJmxExport;
 import com.ning.metrics.serialization.writer.CallbackHandler;
 import com.ning.metrics.serialization.writer.DiskSpoolEventWriter;
-import com.ning.metrics.serialization.writer.EventHandler;
+import com.ning.metrics.serialization.writer.FileHandler;
 import com.ning.metrics.serialization.writer.SyncType;
 import com.ning.metrics.serialization.writer.ThresholdEventWriter;
 
+import java.io.File;
 import java.io.IOException;
-import java.io.ObjectInputStream;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 
@@ -51,23 +50,12 @@ public class ScribeCollectorFactory
         FixedManagedJmxExport.export("com.ning.metrics.eventtracker:name=ScribeSender", eventSender);
         eventSender.createConnection();
 
-        DiskSpoolEventWriter eventWriter = new DiskSpoolEventWriter(new EventHandler()
+        DiskSpoolEventWriter eventWriter = new DiskSpoolEventWriter(new FileHandler()
         {
             @Override
-            public void handle(ObjectInputStream objectInputStream, CallbackHandler handler) throws ClassNotFoundException, IOException
+            public void handle(File file, CallbackHandler handler) throws IOException
             {
-                while (objectInputStream.read() != -1) {
-                    Event event = (Event) objectInputStream.readObject();
-                    eventSender.send(event, handler);
-                }
-
-                objectInputStream.close();
-            }
-
-            @Override
-            public void rollback() throws IOException
-            {
-                // no-op
+                eventSender.send(file, handler);
             }
         }, config.getSpoolDirectoryName(), config.isFlushEnabled(), config.getFlushIntervalInSeconds(),
             new ScheduledThreadPoolExecutor(1, Executors.defaultThreadFactory()), SyncType.valueOf(config.getSyncType()),

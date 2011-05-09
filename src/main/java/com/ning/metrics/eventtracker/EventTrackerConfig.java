@@ -36,21 +36,6 @@ public interface EventTrackerConfig
     public String getType();
     // config-magic doesn't support enums :(
 
-    /**
-     * Configure the type of the events passed "over the wire". Valid values are:
-     * <ul>
-     * <li>THRIFT: Thrift
-     * <li>JSON: JSON
-     * <li>SMILE: Smile
-     * <li>DUMMY: no-op
-     * </ul>
-     *
-     * @return the type of eventtracker to use
-     */
-    @Config(value = "eventtracker.http.eventEncoding")
-    @Default(value = "SMILE")
-    public String getHttpEventEncodingType();
-
     //------------------- Spooling -------------------//
 
     /**

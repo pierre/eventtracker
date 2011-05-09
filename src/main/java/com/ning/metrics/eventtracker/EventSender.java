@@ -16,12 +16,13 @@
 
 package com.ning.metrics.eventtracker;
 
-import com.ning.metrics.serialization.event.Event;
 import com.ning.metrics.serialization.writer.CallbackHandler;
+
+import java.io.File;
 
 interface EventSender
 {
-    public void send(Event event, CallbackHandler handler);
+    public void send(final File file, final CallbackHandler handler);
 
     public void close();
 }

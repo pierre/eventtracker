@@ -22,11 +22,10 @@ import com.ning.http.client.AsyncHttpClient;
 import com.ning.http.client.AsyncHttpClientConfig;
 import com.ning.http.client.Request;
 import com.ning.http.client.Response;
-import com.ning.metrics.serialization.event.Event;
 import com.ning.metrics.serialization.writer.CallbackHandler;
 
+import java.io.File;
 import java.io.IOException;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 class HttpSender implements EventSender
 {
@@ -34,9 +33,9 @@ class HttpSender implements EventSender
     private static final int DEFAULT_IDLE_CONNECTION_IN_POOL_TIMEOUT_IN_MS = 120000; // 2 minutes
 
     private final String collectorURI;
-    private final String httpContentType;
-    private final AsyncHttpClient client;
-    private final AtomicBoolean isClosed = new AtomicBoolean(true);
+    private final AsyncHttpClientConfig clientConfig;
+
+    private AsyncHttpClient client;
 
     @Inject
     public HttpSender(EventTrackerConfig config)
@@ -44,75 +43,71 @@ class HttpSender implements EventSender
         collectorURI = String.format("http://%s:%d%s", config.getCollectorHost(), config.getCollectorPort(), URI_PATH);
         // CAUTION: it is not enforced that the actual event encoding type on the wire matches what the config says it is
         // the event encoding type is determined by the Event's writeExternal() method.
-        httpContentType = EventEncodingType.valueOf(config.getHttpEventEncodingType()).toString();
-        AsyncHttpClientConfig clientConfig = new AsyncHttpClientConfig.Builder()
+        //TODO right now we can only send SMILE. Can't send plain JSON
+        clientConfig = new AsyncHttpClientConfig.Builder()
             .setIdleConnectionInPoolTimeoutInMs(DEFAULT_IDLE_CONNECTION_IN_POOL_TIMEOUT_IN_MS)
             .setConnectionTimeoutInMs(100)
             .setMaximumConnectionsPerHost(-1) // unlimited connections
             .build();
-        client = new AsyncHttpClient(clientConfig);
-        isClosed.set(false);
     }
 
+    /**
+     * Send a file full of events to the collector. This does zero-bytes-copy by default (the async-http-client does
+     * it for us).
+     *
+     * @param file    File to send
+     * @param handler callback handler for the serialization-writer library
+     */
     @Override
-    public void send(final Event event, final CallbackHandler handler)
+    public void send(final File file, final CallbackHandler handler)
     {
-        // Submit the event
+        if (client == null || client.isClosed()) {
+            client = new AsyncHttpClient(clientConfig);
+        }
+
         try {
-            client.executeRequest(createPostRequest(event),
-                new AsyncCompletionHandler<String>()
+            client.executeRequest(createPostRequest(file),
+                new AsyncCompletionHandler<Response>()
                 {
                     @Override
-                    public String onCompleted(Response response) throws Exception
+                    public Response onCompleted(Response response)
                     {
                         if (response.getStatusCode() == 202) {
-                            handler.onSuccess(event);
+                            handler.onSuccess(file);
                         }
                         else {
-                            handler.onError(new Throwable(String.format("Received response %d: %s", response.getStatusCode(), response.getStatusText())), event);
+                            handler.onError(new IOException(String.format("Received response %d: %s",
+                                response.getStatusCode(), response.getStatusText())), file);
                         }
-                        return response.getResponseBody(); // this return value's never read.
+
+                        return response; // never read
                     }
 
                     @Override
                     public void onThrowable(Throwable t)
                     {
-                        handler.onError(t, event);
+                        handler.onError(t, file);
                     }
                 });
         }
         catch (IOException e) {
-            handler.onError(new Throwable(e), event);
+            // Recycle the client
+            client.close();
+            handler.onError(e, file);
         }
     }
 
     @Override
     public synchronized void close()
     {
-        if (client != null && !isClosed.get()) {
+        if (client != null && !client.isClosed()) {
             client.close();
-            isClosed.set(true);
         }
     }
 
-    private Request createPostRequest(Event event)
+    private Request createPostRequest(File file)
     {
-        //TODO right now we can only send SMILE. Can't send plain JSON
-        byte[] serializedEvent = event.getSerializedEvent();
-        AsyncHttpClient.BoundRequestBuilder requestBuilder = client.preparePost(collectorURI)
-            .addHeader("Content-Length", String.valueOf(serializedEvent.length))
-            .addHeader("Content-Type", httpContentType)
-            .setBody(serializedEvent)
-            .addQueryParameter("name", event.getName());
-
-        if (event.getEventDateTime() != null) {
-            requestBuilder.addQueryParameter("date", event.getEventDateTime().toString());
-        }
-
-        if (event.getGranularity() != null) {
-            requestBuilder.addQueryParameter("granularity", event.getGranularity().toString());
-        }
-
+        AsyncHttpClient.BoundRequestBuilder requestBuilder = client.preparePost(collectorURI).setBody(file); // zero-bytes-copy
         return requestBuilder.build();
     }
 }

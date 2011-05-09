@@ -48,12 +48,7 @@ class ScribeSenderProvider implements Provider<ScribeSender>
     public ScribeSender get()
     {
         final ScribeClientImpl scribeClient = new ScribeClientImpl(config.getScribeHost(), config.getScribePort());
-        try {
-            scribeClient.openLogger();
-        }
-        catch (TTransportException e) {
-            throw new ProvisionException("Unable to create Scribe client", e);
-        }
+
 
         return new ScribeSender(scribeClient, config.getScribeRefreshRate(), config.getScribeMaxIdleTimeInMinutes());
     }

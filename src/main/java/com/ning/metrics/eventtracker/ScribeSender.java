@@ -17,6 +17,7 @@
 package com.ning.metrics.eventtracker;
 
 import com.ning.metrics.serialization.event.Event;
+import com.ning.metrics.serialization.event.Events;
 import com.ning.metrics.serialization.event.SmileBucketEvent;
 import com.ning.metrics.serialization.writer.CallbackHandler;
 import org.apache.commons.codec.binary.Base64;
@@ -26,6 +27,7 @@ import org.weakref.jmx.Managed;
 import scribe.thrift.LogEntry;
 
 import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.IOException;
 import java.io.ObjectOutputStream;
 import java.nio.charset.Charset;
@@ -118,32 +120,27 @@ public class ScribeSender implements EventSender
     }
 
     @Override
-    public void send(Event event, CallbackHandler handler)
+    public void send(final File file, final CallbackHandler handler)
     {
-        if (scribeClient == null) {
-            handler.onError(new Throwable("Scribe client has not been set up correctly"), event);
-            return;
+        if (scribeClient == null || isClosed.get()) {
+            createConnection();
         }
 
         // Tell the watchdog that we are doing something
         sleeping.set(false);
 
-        // TODO: offer batch API?, see drainEvents
-        List<LogEntry> list = new ArrayList<LogEntry>(1);
-        // TODO: update Scribe to pass a Thrift directly instead of serializing it
-
-        final String logEntryMessage;
-        try {
-            logEntryMessage = eventToLogEntryMessage(event);
-        }
-        catch (IOException e) {
-            handler.onError(new Throwable(e), event);
+        // Parse the underlying file and generate the payload for Scribe
+        List<LogEntry> list = createScribePayload(file, handler);
+        if (list == null) {
+            // Something went wrong
             return;
         }
-        list.add(new LogEntry(event.getName(), logEntryMessage));
 
         try {
             scribeClient.log(list);
+            // Get rid of the file. We do it early, because the reconnection may fail
+            handler.onSuccess(file);
+
             messagesSuccessfullySent.addAndGet(list.size());
             messagesSuccessfullySentSinceLastReconnection.addAndGet(list.size());
 
@@ -159,10 +156,39 @@ public class ScribeSender implements EventSender
             // Connection flacky?
             log.warn(String.format("Error while sending message to Scribe: %s", e.getLocalizedMessage()));
             createConnection();
-            handler.onError(new Throwable(e), event);
+            handler.onError(new Throwable(e), file);
         }
+    }
 
-        handler.onSuccess(event);
+    /**
+     * Give a file of events, generate LogEntry messages for Scribe
+     *
+     * @param file    File containing events
+     * @param handler notifier for the serialization-writer library
+     * @return list of Scirbe-ready events on success, null otherwise
+     */
+    private List<LogEntry> createScribePayload(File file, CallbackHandler handler)
+    {
+        try {
+            List<Event> events = Events.fromFile(file);
+            List<LogEntry> list = new ArrayList<LogEntry>(events.size());
+
+            String logEntryMessage;
+            for (Event event : events) {
+                logEntryMessage = eventToLogEntryMessage(event);
+                list.add(new LogEntry(event.getName(), logEntryMessage));
+            }
+
+            return list;
+        }
+        catch (ClassNotFoundException e) {
+            handler.onError(new Throwable(e), file);
+            return null;
+        }
+        catch (IOException e) {
+            handler.onError(new Throwable(e), file);
+            return null;
+        }
     }
 
     protected static String eventToLogEntryMessage(Event event) throws IOException
