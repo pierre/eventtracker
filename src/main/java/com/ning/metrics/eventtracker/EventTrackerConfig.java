@@ -109,24 +109,27 @@ public interface EventTrackerConfig
     @Default(value = "5")
     public int getRateWindowSizeMinutes();
 
+    //------------------- HTTP Sender -------------------//
+
+    /**
+     * Collector host
+     *
+     * @return the hostname or IP of the collector host to use
+     */
     @Config(value = "eventtracker.collector.host")
     @Default(value = "127.0.0.1")
     public String getCollectorHost();
 
+    /**
+     * Collector port
+     *
+     * @return the collector port to use
+     */
     @Config(value = "eventtracker.collector.port")
     @Default(value = "8080")
     public int getCollectorPort();
 
     //------------------- Scribe Sender -------------------//
-
-    /**
-     * Scribe port
-     *
-     * @return the Scribe port to use
-     */
-    @Config(value = "eventtracker.scribe.port")
-    @Default(value = "1463")
-    public int getScribePort();
 
     /**
      * Scribe host
@@ -136,6 +139,15 @@ public interface EventTrackerConfig
     @Config(value = "eventtracker.scribe.host")
     @Default(value = "127.0.0.1")
     public String getScribeHost();
+
+    /**
+     * Scribe port
+     *
+     * @return the Scribe port to use
+     */
+    @Config(value = "eventtracker.scribe.port")
+    @Default(value = "1463")
+    public int getScribePort();
 
     /**
      * Number of messages to send to Scribe before refreshing the connection
