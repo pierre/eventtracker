@@ -16,13 +16,12 @@
 
 package com.ning.metrics.eventtracker;
 
+import com.ning.metrics.eventtracker.CollectorControllerModule.Type;
 import org.skife.config.ConfigurationObjectFactory;
 import org.testng.Assert;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
-
-import com.ning.metrics.eventtracker.CollectorControllerModule.Type;
 
 import java.io.File;
 import java.util.Properties;
@@ -83,30 +82,5 @@ public class TestConfigTypes
         p.put("eventtracker.type", "NO_LOGGING");
         final EventTrackerConfig eventTrackerConfig = new ConfigurationObjectFactory(p).build(EventTrackerConfig.class);
         Assert.assertEquals(Type.valueOf(eventTrackerConfig.getType()), Type.NO_LOGGING);
-    }
-
-    public void testEventEncodingType()
-    {
-        p.put("eventtracker.http.eventEncoding", "THRIFT");
-        EventTrackerConfig eventTrackerConfig = new ConfigurationObjectFactory(p).build(EventTrackerConfig.class);
-        Assert.assertEquals(EventEncodingType.valueOf(eventTrackerConfig.getHttpEventEncodingType()), EventEncodingType.THRIFT);
-
-        p.put("eventtracker.http.eventEncoding", "JSON");
-        eventTrackerConfig = new ConfigurationObjectFactory(p).build(EventTrackerConfig.class);
-        Assert.assertEquals(EventEncodingType.valueOf(eventTrackerConfig.getHttpEventEncodingType()), EventEncodingType.JSON);
-
-        //TODO
-        //eventTrackerConfig.setHttpEventEncodingType("SMILE");
-        //Assert.assertEquals(EventEncodingType.valueOf(eventTrackerConfig.getHttpEventEncodingType()), EventEncodingType.SMILE);
-
-        try {
-            p.put("eventtracker.http.eventEncoding", "TYPO");
-            eventTrackerConfig = new ConfigurationObjectFactory(p).build(EventTrackerConfig.class);
-            EventEncodingType.valueOf(eventTrackerConfig.getHttpEventEncodingType());
-            Assert.fail("expected exception");
-        }
-        catch (Exception e) {
-            // does anything need to go here?
-        }
     }
 }
