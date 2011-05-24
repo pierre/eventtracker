@@ -26,24 +26,36 @@ import com.ning.metrics.serialization.writer.CallbackHandler;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 
 class HttpSender implements EventSender
 {
+    private static final Map<EventType, String> headers = new HashMap<EventType, String>();
+
+    static {
+        headers.put(EventType.SMILE, "application/json+smile");
+        headers.put(EventType.JSON, "application/json");
+        headers.put(EventType.THRIFT, "ning/thrift");
+        headers.put(EventType.DEFAULT, "ning/1.0");
+    }
+
     public static final String URI_PATH = "/rest/1.0/event";
     private static final int DEFAULT_IDLE_CONNECTION_IN_POOL_TIMEOUT_IN_MS = 120000; // 2 minutes
 
+    private final EventTrackerConfig config;
     private final String collectorURI;
     private final AsyncHttpClientConfig clientConfig;
 
     private AsyncHttpClient client;
 
     @Inject
-    public HttpSender(EventTrackerConfig config)
+    public HttpSender(final EventTrackerConfig config)
     {
+        this.config = config;
         collectorURI = String.format("http://%s:%d%s", config.getCollectorHost(), config.getCollectorPort(), URI_PATH);
         // CAUTION: it is not enforced that the actual event encoding type on the wire matches what the config says it is
         // the event encoding type is determined by the Event's writeExternal() method.
-        //TODO right now we can only send SMILE. Can't send plain JSON
         clientConfig = new AsyncHttpClientConfig.Builder()
             .setIdleConnectionInPoolTimeoutInMs(DEFAULT_IDLE_CONNECTION_IN_POOL_TIMEOUT_IN_MS)
             .setConnectionTimeoutInMs(100)
@@ -105,9 +117,11 @@ class HttpSender implements EventSender
         }
     }
 
-    private Request createPostRequest(File file)
+    private Request createPostRequest(final File file)
     {
-        AsyncHttpClient.BoundRequestBuilder requestBuilder = client.preparePost(collectorURI).setBody(file); // zero-bytes-copy
+        final AsyncHttpClient.BoundRequestBuilder requestBuilder = client
+            .preparePost(collectorURI).setBody(file)
+            .setHeader("Content-Type", headers.get(config.getEventType())); // zero-bytes-copy
         return requestBuilder.build();
     }
 }

@@ -61,6 +61,7 @@ class DiskSpoolEventWriterProvider implements Provider<DiskSpoolEventWriter>
                 eventSender.send(file, handler);
             }
         }, config.getSpoolDirectoryName(), config.isFlushEnabled(), config.getFlushIntervalInSeconds(), executor,
-            SyncType.valueOf(config.getSyncType()), config.getSyncBatchSize(), config.getRateWindowSizeMinutes());
+            SyncType.valueOf(config.getSyncType()), config.getSyncBatchSize(), config.getRateWindowSizeMinutes(),
+            config.getEventType().getSerializer());
     }
 }

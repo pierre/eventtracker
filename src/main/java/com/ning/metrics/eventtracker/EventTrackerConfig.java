@@ -19,7 +19,7 @@ package com.ning.metrics.eventtracker;
 import org.skife.config.Config;
 import org.skife.config.Default;
 
-public interface EventTrackerConfig
+interface EventTrackerConfig
 {
     /**
      * Configure the type of the eventtracker. Valid values are:
@@ -33,7 +33,14 @@ public interface EventTrackerConfig
      */
     @Config(value = "eventtracker.type")
     @Default(value = "COLLECTOR")
-    public CollectorControllerModule.Type getType();
+    CollectorControllerModule.Type getType();
+
+    /**
+     * @return type of serialization to use (THRIFT, SMILE, JSON)
+     */
+    @Config(value = "eventtracker.event-type")
+    @Default(value = "SMILE")
+    EventType getEventType();
 
     //------------------- Spooling -------------------//
 
@@ -46,7 +53,7 @@ public interface EventTrackerConfig
      */
     @Config(value = "eventtracker.diskspool.flush-event-queue-size")
     @Default(value = "10000")
-    public long getFlushEventQueueSize();
+    long getFlushEventQueueSize();
 
     /**
      * Maxixum number of seconds before events are promoted from the temporary spooling area to the final spool queue.
@@ -56,7 +63,7 @@ public interface EventTrackerConfig
      */
     @Config(value = "eventtracker.diskspool.refresh-delay-seconds")
     @Default(value = "60")
-    public int getRefreshDelayInSeconds();
+    int getRefreshDelayInSeconds();
 
     /**
      * Directory for the Event Tracker to store events it can not send immediately
@@ -65,7 +72,7 @@ public interface EventTrackerConfig
      */
     @Config(value = "eventtracker.diskspool.path")
     @Default(value = "/tmp/eventtracker/diskspool")
-    public String getSpoolDirectoryName();
+    String getSpoolDirectoryName();
 
     /**
      * If false, events will not be periodically sent
@@ -74,7 +81,7 @@ public interface EventTrackerConfig
      */
     @Config(value = "eventtracker.diskspool.enabled")
     @Default(value = "true")
-    public boolean isFlushEnabled();
+    boolean isFlushEnabled();
 
     /**
      * Delay between flushes (in seconds)
@@ -83,7 +90,7 @@ public interface EventTrackerConfig
      */
     @Config(value = "eventtracker.diskspool.flush-interval-seconds")
     @Default(value = "60")
-    public int getFlushIntervalInSeconds();
+    int getFlushIntervalInSeconds();
 
     /**
      * Type of outputter to use when spooling: NONE, FLUSH, or SYNC
@@ -92,7 +99,7 @@ public interface EventTrackerConfig
      */
     @Config(value = "eventtracker.diskspool.synctype")
     @Default(value = "NONE")
-    public String getSyncType();
+    String getSyncType();
 
     /**
      * Batch size to use for the outputter.
@@ -102,11 +109,11 @@ public interface EventTrackerConfig
      */
     @Config(value = "eventtracker.diskspool.batch-size")
     @Default(value = "50")
-    public int getSyncBatchSize();
+    int getSyncBatchSize();
 
     @Config(value = "eventtracker.event-end-point.rate-window-size-minutes")
     @Default(value = "5")
-    public int getRateWindowSizeMinutes();
+    int getRateWindowSizeMinutes();
 
     //------------------- HTTP Sender -------------------//
 
@@ -117,7 +124,7 @@ public interface EventTrackerConfig
      */
     @Config(value = "eventtracker.collector.host")
     @Default(value = "127.0.0.1")
-    public String getCollectorHost();
+    String getCollectorHost();
 
     /**
      * Collector port
@@ -126,7 +133,7 @@ public interface EventTrackerConfig
      */
     @Config(value = "eventtracker.collector.port")
     @Default(value = "8080")
-    public int getCollectorPort();
+    int getCollectorPort();
 
     //------------------- Scribe Sender -------------------//
 
@@ -137,7 +144,7 @@ public interface EventTrackerConfig
      */
     @Config(value = "eventtracker.scribe.host")
     @Default(value = "127.0.0.1")
-    public String getScribeHost();
+    String getScribeHost();
 
     /**
      * Scribe port
@@ -146,7 +153,7 @@ public interface EventTrackerConfig
      */
     @Config(value = "eventtracker.scribe.port")
     @Default(value = "1463")
-    public int getScribePort();
+    int getScribePort();
 
     /**
      * Number of messages to send to Scribe before refreshing the connection
@@ -156,7 +163,7 @@ public interface EventTrackerConfig
      */
     @Config(value = "eventtracker.scribe.refresh_rate")
     @Default(value = "1000000")
-    public int getScribeRefreshRate();
+    int getScribeRefreshRate();
 
     /**
      * Number of minutes allowed for the connection to be idle before re-opening it
@@ -166,5 +173,5 @@ public interface EventTrackerConfig
      */
     @Config(value = "eventtracker.scribe.max-idle-minutes")
     @Default(value = "4")
-    public int getScribeMaxIdleTimeInMinutes();
+    int getScribeMaxIdleTimeInMinutes();
 }
