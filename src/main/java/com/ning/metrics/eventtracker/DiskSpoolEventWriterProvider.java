@@ -20,11 +20,10 @@ import com.google.inject.Inject;
 import com.google.inject.Provider;
 import com.ning.metrics.serialization.writer.CallbackHandler;
 import com.ning.metrics.serialization.writer.DiskSpoolEventWriter;
-import com.ning.metrics.serialization.writer.FileHandler;
+import com.ning.metrics.serialization.writer.EventHandler;
 import com.ning.metrics.serialization.writer.SyncType;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.concurrent.ScheduledExecutorService;
 
 class DiskSpoolEventWriterProvider implements Provider<DiskSpoolEventWriter>
@@ -35,9 +34,9 @@ class DiskSpoolEventWriterProvider implements Provider<DiskSpoolEventWriter>
 
     @Inject
     public DiskSpoolEventWriterProvider(
-        EventTrackerConfig config,
-        EventSender eventSender,
-        ScheduledExecutorService executor
+        final EventTrackerConfig config,
+        final EventSender eventSender,
+        final ScheduledExecutorService executor
     )
     {
         this.config = config;
@@ -54,10 +53,10 @@ class DiskSpoolEventWriterProvider implements Provider<DiskSpoolEventWriter>
     @Override
     public DiskSpoolEventWriter get()
     {
-        return new DiskSpoolEventWriter(new FileHandler()
+        return new DiskSpoolEventWriter(new EventHandler()
         {
             @Override
-            public void handle(final File file, CallbackHandler handler) throws IOException
+            public void handle(final File file, final CallbackHandler handler)
             {
                 eventSender.send(file, handler);
             }

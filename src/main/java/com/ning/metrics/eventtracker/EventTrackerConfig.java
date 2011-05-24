@@ -33,8 +33,7 @@ public interface EventTrackerConfig
      */
     @Config(value = "eventtracker.type")
     @Default(value = "COLLECTOR")
-    public String getType();
-    // config-magic doesn't support enums :(
+    public CollectorControllerModule.Type getType();
 
     //------------------- Spooling -------------------//
 

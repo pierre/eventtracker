@@ -20,12 +20,13 @@ import com.google.inject.Inject;
 import com.ning.metrics.serialization.event.Event;
 import com.ning.metrics.serialization.writer.CallbackHandler;
 
+import java.io.File;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 class MockCollectorSender implements EventSender
 {
     private MockCollectorClient collectorClient;
-    private Event receivedEvent;
+    private File receivedEvent;
     private final AtomicBoolean isClosed = new AtomicBoolean(true);
 
     @Inject
@@ -35,10 +36,10 @@ class MockCollectorSender implements EventSender
     }
 
     @Override
-    public void send(Event event, CallbackHandler handler)
+    public void send(File event, CallbackHandler handler)
     {
         receivedEvent = event;
-        collectorClient.postThrift(event);
+//        collectorClient.postThrift(event);
         handler.onSuccess(event);
     }
 
@@ -65,7 +66,7 @@ class MockCollectorSender implements EventSender
 
     public Event getReceivedEvent()
     {
-        return receivedEvent;
+        return null;//receivedEvent;
     }
 
     public boolean isClosed()

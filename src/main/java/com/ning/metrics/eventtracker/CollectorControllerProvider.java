@@ -22,6 +22,7 @@ import com.ning.metrics.serialization.writer.DiskSpoolEventWriter;
 import org.apache.log4j.Logger;
 
 import java.io.IOException;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
@@ -34,7 +35,7 @@ class CollectorControllerProvider implements Provider<CollectorController>
     private final EventSender eventSender;
 
     @Inject
-    public CollectorControllerProvider(ScheduledExecutorService executor, DiskSpoolEventWriter eventWriter, EventSender eventSender)
+    public CollectorControllerProvider(final ScheduledExecutorService executor, final DiskSpoolEventWriter eventWriter, final EventSender eventSender)
     {
         this.executor = executor;
         this.eventWriter = eventWriter;
@@ -59,7 +60,11 @@ class CollectorControllerProvider implements Provider<CollectorController>
         return controller;
     }
 
-    protected static void mainEventTrackerShutdownHook(ScheduledExecutorService executor, DiskSpoolEventWriter eventWriter, EventSender eventSender, CollectorController controller)
+    protected static void mainEventTrackerShutdownHook(
+        final ExecutorService executor,
+        final DiskSpoolEventWriter eventWriter,
+        final EventSender eventSender,
+        final CollectorController controller)
     {
         log.info("Starting main shutdown sequence");
 
@@ -92,12 +97,7 @@ class CollectorControllerProvider implements Provider<CollectorController>
 
         log.info("Flush all local files");
         // Flush events to remote collectors
-        try {
-            eventWriter.flush();
-        }
-        catch (IOException e) {
-            log.warn("IOException while flushing last files to the collectors", e);
-        }
+        eventWriter.flush();
 
         log.info("Close event sender");
         // Close the sender

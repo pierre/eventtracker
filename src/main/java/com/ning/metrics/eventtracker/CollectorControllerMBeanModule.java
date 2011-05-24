@@ -40,7 +40,7 @@ public class CollectorControllerMBeanModule extends AbstractModule
         ExportBuilder builder = MBeanModule.newExporter(binder());
 
         final EventTrackerConfig eventTrackerConfig = new ConfigurationObjectFactory(System.getProperties()).build(EventTrackerConfig.class);
-        CollectorControllerModule.Type type = CollectorControllerModule.Type.valueOf(eventTrackerConfig.getType());
+        final CollectorControllerModule.Type type = eventTrackerConfig.getType();
 
         switch (type) {
             case SCRIBE:

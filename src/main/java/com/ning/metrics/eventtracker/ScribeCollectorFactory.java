@@ -19,7 +19,7 @@ package com.ning.metrics.eventtracker;
 import com.ning.metrics.serialization.util.FixedManagedJmxExport;
 import com.ning.metrics.serialization.writer.CallbackHandler;
 import com.ning.metrics.serialization.writer.DiskSpoolEventWriter;
-import com.ning.metrics.serialization.writer.FileHandler;
+import com.ning.metrics.serialization.writer.EventHandler;
 import com.ning.metrics.serialization.writer.SyncType;
 import com.ning.metrics.serialization.writer.ThresholdEventWriter;
 
@@ -35,7 +35,7 @@ public class ScribeCollectorFactory
     private final CollectorController controller;
     private static ScribeSender eventSender;
 
-    public static synchronized CollectorController createScribeController(EventTrackerConfig config) throws IOException
+    public static synchronized CollectorController createScribeController(final EventTrackerConfig config) throws IOException
     {
         if (singletonController == null) {
             singletonController = new ScribeCollectorFactory(config).get();
@@ -44,23 +44,23 @@ public class ScribeCollectorFactory
         return singletonController;
     }
 
-    ScribeCollectorFactory(EventTrackerConfig config)
+    ScribeCollectorFactory(final EventTrackerConfig config)
     {
         eventSender = new ScribeSender(new ScribeClientImpl(config.getScribeHost(), config.getScribePort()), config.getScribeRefreshRate(), config.getScribeMaxIdleTimeInMinutes());
         FixedManagedJmxExport.export("com.ning.metrics.eventtracker:name=ScribeSender", eventSender);
         eventSender.createConnection();
 
-        DiskSpoolEventWriter eventWriter = new DiskSpoolEventWriter(new FileHandler()
+        final DiskSpoolEventWriter eventWriter = new DiskSpoolEventWriter(new EventHandler()
         {
             @Override
-            public void handle(File file, CallbackHandler handler) throws IOException
+            public void handle(final File file, final CallbackHandler handler)
             {
                 eventSender.send(file, handler);
             }
         }, config.getSpoolDirectoryName(), config.isFlushEnabled(), config.getFlushIntervalInSeconds(),
             new ScheduledThreadPoolExecutor(1, Executors.defaultThreadFactory()), SyncType.valueOf(config.getSyncType()),
             config.getSyncBatchSize(), config.getRateWindowSizeMinutes());
-        ThresholdEventWriter thresholdEventWriter = new ThresholdEventWriter(eventWriter, config.getFlushEventQueueSize(), config.getRefreshDelayInSeconds());
+        final ThresholdEventWriter thresholdEventWriter = new ThresholdEventWriter(eventWriter, config.getFlushEventQueueSize(), config.getRefreshDelayInSeconds());
 
         controller = new CollectorController(thresholdEventWriter);
         FixedManagedJmxExport.export("eventtracker:name=CollectorController", controller);

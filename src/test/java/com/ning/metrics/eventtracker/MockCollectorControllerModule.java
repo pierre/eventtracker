@@ -17,8 +17,6 @@
 package com.ning.metrics.eventtracker;
 
 import com.google.inject.AbstractModule;
-import com.ning.metrics.serialization.event.Event;
-import com.ning.metrics.serialization.event.StubEvent;
 import com.ning.metrics.serialization.writer.CallbackHandler;
 import com.ning.metrics.serialization.writer.DiskSpoolEventWriter;
 import com.ning.metrics.serialization.writer.EventHandler;
@@ -27,8 +25,8 @@ import com.ning.metrics.serialization.writer.StubScheduledExecutorService;
 import com.ning.metrics.serialization.writer.SyncType;
 import org.skife.config.ConfigurationObjectFactory;
 
+import java.io.File;
 import java.io.IOException;
-import java.io.ObjectInputStream;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -79,16 +77,10 @@ public class MockCollectorControllerModule extends AbstractModule
         bind(DiskSpoolEventWriter.class).toInstance(new MockDiskSpoolEventWriter(new EventHandler()
         {
             @Override
-            public void handle(ObjectInputStream objectInputStream, CallbackHandler handler) throws ClassNotFoundException, IOException
+            public void handle(File file, CallbackHandler handler)
             {
                 // Send a dummy event
-                eventSender.send(new StubEvent(), handler);
-            }
-
-            @Override
-            public void rollback() throws IOException
-            {
-                // no-op
+                eventSender.send(file, handler);
             }
         }, config.getSpoolDirectoryName(), config.isFlushEnabled(), config.getFlushIntervalInSeconds(), executor,
             SyncType.valueOf(config.getSyncType()), config.getSyncBatchSize(), config.getRateWindowSizeMinutes()));
@@ -111,25 +103,20 @@ public class MockCollectorControllerModule extends AbstractModule
          * @throws IOException generic IOException
          */
         @Override
-        public void flush() throws IOException
+        public void flush()
         {
-            try {
-                delegate.handle(null, new CallbackHandler()
+            delegate.handle(null, new CallbackHandler()
+            {
+                @Override
+                public void onError(Throwable t, File event)
                 {
-                    @Override
-                    public void onError(Throwable t, Event event)
-                    {
-                    }
+                }
 
-                    @Override
-                    public void onSuccess(Event event)
-                    {
-                    }
-                });
-            }
-            catch (ClassNotFoundException e) {
-                throw new IOException(e);
-            }
+                @Override
+                public void onSuccess(File event)
+                {
+                }
+            });
         }
     }
 }

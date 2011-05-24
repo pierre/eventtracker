@@ -54,7 +54,7 @@ public class CollectorControllerModule extends AbstractModule
         final EventTrackerConfig eventTrackerConfig = new ConfigurationObjectFactory(System.getProperties()).build(EventTrackerConfig.class);
         bind(EventTrackerConfig.class).toInstance(eventTrackerConfig);
 
-        type = Type.valueOf(eventTrackerConfig.getType());
+        type = eventTrackerConfig.getType();
 
         switch (type) {
             case COLLECTOR:
