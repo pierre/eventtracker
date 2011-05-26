@@ -135,6 +135,15 @@ interface EventTrackerConfig
     @Default(value = "8080")
     int getCollectorPort();
 
+    /**
+     * Max busy wait time for Http requests to finish when shutting down the eventtracker
+     *
+     * @return number of milliseconds to wait on shutdown, 8 seconds by default
+     */
+    @Config("eventtracker.collector.max-wait-time-millis")
+    @Default(value = "8000")
+    long getHttpMaxWaitTimeInMillis();
+
     //------------------- Scribe Sender -------------------//
 
     /**

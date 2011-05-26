@@ -23,15 +23,20 @@ import com.ning.http.client.AsyncHttpClientConfig;
 import com.ning.http.client.Request;
 import com.ning.http.client.Response;
 import com.ning.metrics.serialization.writer.CallbackHandler;
+import org.apache.log4j.Logger;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicLong;
 
 class HttpSender implements EventSender
 {
+    private static final Logger log = Logger.getLogger(HttpSender.class);
     private static final Map<EventType, String> headers = new HashMap<EventType, String>();
+
+    private final AtomicLong activeRequests = new AtomicLong(0);
 
     static {
         headers.put(EventType.SMILE, "application/json+smile");
@@ -82,8 +87,10 @@ class HttpSender implements EventSender
                 new AsyncCompletionHandler<Response>()
                 {
                     @Override
-                    public Response onCompleted(Response response)
+                    public Response onCompleted(final Response response)
                     {
+                        activeRequests.decrementAndGet();
+
                         if (response.getStatusCode() == 202) {
                             handler.onSuccess(file);
                         }
@@ -96,11 +103,14 @@ class HttpSender implements EventSender
                     }
 
                     @Override
-                    public void onThrowable(Throwable t)
+                    public void onThrowable(final Throwable t)
                     {
+                        activeRequests.decrementAndGet();
                         handler.onError(t, file);
                     }
                 });
+
+            activeRequests.incrementAndGet();
         }
         catch (IOException e) {
             // Recycle the client
@@ -113,7 +123,28 @@ class HttpSender implements EventSender
     public synchronized void close()
     {
         if (client != null && !client.isClosed()) {
-            client.close();
+            try {
+                if (activeRequests.get() > 0) {
+                    log.info(String.format("%d HTTP request(s) in progress, giving them some time to finish...", activeRequests.get()));
+                }
+
+                long sleptInMillins = config.getHttpMaxWaitTimeInMillis();
+                while (activeRequests.get() > 0 && sleptInMillins >= 0) {
+                    Thread.sleep(200);
+                    sleptInMillins -= 200;
+                }
+
+                if (activeRequests.get() > 0) {
+                    log.warn("Giving up on pending HTTP requests, shutting down NOW!");
+                }
+            }
+            catch (InterruptedException e) {
+                log.warn("Interrupted while waiting for active queries to finish");
+                Thread.currentThread().interrupt();
+            }
+            finally {
+                client.close();
+            }
         }
     }
 
