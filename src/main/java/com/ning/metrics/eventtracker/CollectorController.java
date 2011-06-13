@@ -55,6 +55,7 @@ public class CollectorController
     public void offerEvent(final Event event) throws IOException
     {
         if (!acceptEvents.get()) {
+            // TODO shouldn't we increment eventsLost here?
             return;
         }
 
