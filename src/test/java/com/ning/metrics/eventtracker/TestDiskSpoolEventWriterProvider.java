@@ -1,5 +1,6 @@
 package com.ning.metrics.eventtracker;
 
+import com.ning.metrics.serialization.event.Event;
 import com.ning.metrics.serialization.event.SmileEnvelopeEvent;
 import com.ning.metrics.serialization.event.ThriftEnvelopeEvent;
 import com.ning.metrics.serialization.smile.SmileEnvelopeEventDeserializer;
@@ -52,19 +53,19 @@ public class TestDiskSpoolEventWriterProvider
         config = new ConfigurationObjectFactory(System.getProperties()).build(EventTrackerConfig.class);
 
         // Create a SmileEnvelope event
-        HashMap<String, Object> map = new HashMap<String, Object>();
+        final HashMap<String, Object> map = new HashMap<String, Object>();
         map.put("first", "hello");
         map.put("second", "world");
-        SmileEnvelopeEvent event = new SmileEnvelopeEvent(EVENT_NAME, EVENT_DATE_TIME, map);
+        final Event event = new SmileEnvelopeEvent(EVENT_NAME, EVENT_DATE_TIME, map);
 
         final int numberOfSmileEventsToSend = 3;
 
         // Send 3 events, the writer library should bufferize them
         final AtomicInteger sendCalls = new AtomicInteger(0);
-        DiskSpoolEventWriter diskSpoolEventWriter = diskWriterProvider(new EventSender()
+        final DiskSpoolEventWriter diskSpoolEventWriter = diskWriterProvider(new EventSender()
         {
             @Override
-            public void send(File file, CallbackHandler handler)
+            public void send(final File file, final CallbackHandler handler)
             {
                 Assert.assertTrue(file.exists());
 
@@ -72,7 +73,7 @@ public class TestDiskSpoolEventWriterProvider
 
                 // extract the events to check that files are formatted correctly
                 try {
-                    SmileEnvelopeEventDeserializer extractor = new SmileEnvelopeEventDeserializer(new FileInputStream(file), true);
+                    final SmileEnvelopeEventDeserializer extractor = new SmileEnvelopeEventDeserializer(new FileInputStream(file), false);
 
                     int numEventsExtracted = 0;
                     SmileEnvelopeEvent event = extractor.getNextEvent();
