@@ -17,11 +17,14 @@
 package com.ning.metrics.eventtracker;
 
 import com.google.inject.Inject;
-import com.ning.metrics.serialization.event.StubEvent;
+import com.ning.metrics.serialization.event.ThriftEnvelopeEvent;
+import com.ning.metrics.serialization.event.ThriftToThriftEnvelopeEvent;
 import com.ning.metrics.serialization.writer.DiskSpoolEventWriter;
+import org.joda.time.DateTime;
 import org.testng.annotations.Guice;
 import org.testng.annotations.Test;
 
+import java.util.UUID;
 import java.util.concurrent.ScheduledExecutorService;
 
 import static org.testng.Assert.assertEquals;
@@ -48,13 +51,13 @@ public class TestCollectorControllerProvider
     public void testGet() throws Exception
     {
         assertTrue(controller.isAcceptEvents());
-        controller.offerEvent(new StubEvent());
+
+        final ThriftEnvelopeEvent event = ThriftToThriftEnvelopeEvent.extractEvent("thrift", new DateTime(), new Click(UUID.randomUUID().toString(), new DateTime().getMillis(), "user agent"));
+        controller.offerEvent(event);
+        // Too fast, we won't see anything. The shutdown hook will trigger a flush though
         assertEquals(((MockCollectorSender) eventSender).getSuccessCount(), 0);
 
         CollectorControllerProvider.mainEventTrackerShutdownHook(executor, spoolWriter, eventSender, controller);
-
-        // no-op
-        controller.offerEvent(new StubEvent());
 
         assertFalse(controller.isAcceptEvents());
         assertTrue(executor.isTerminated());

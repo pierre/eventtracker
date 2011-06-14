@@ -21,14 +21,12 @@ import com.google.inject.Guice;
 import com.google.inject.Injector;
 import com.ning.metrics.serialization.event.Event;
 import com.ning.metrics.serialization.event.Granularity;
-import com.ning.metrics.serialization.event.SmileBucketEvent;
 import com.ning.metrics.serialization.event.SmileEnvelopeEvent;
 import com.ning.metrics.serialization.event.ThriftEnvelopeEvent;
 import com.ning.metrics.serialization.event.ThriftToThriftEnvelopeEvent;
 import com.ning.metrics.serialization.writer.DiskSpoolEventWriter;
 import com.ning.metrics.serialization.writer.EventWriter;
 import org.codehaus.jackson.JsonGenerator;
-import org.codehaus.jackson.JsonNode;
 import org.codehaus.jackson.smile.SmileFactory;
 import org.codehaus.jackson.smile.SmileGenerator;
 import org.codehaus.jackson.smile.SmileParser;
@@ -56,7 +54,7 @@ public class TestSmileBuffering
     @BeforeTest(alwaysRun = true)
     private void setupController() throws IOException
     {
-        System.setProperty("eventtracker.diskspool.path","/tmp/eventtracker");
+        System.setProperty("eventtracker.diskspool.path", "/tmp/eventtracker");
         final EventTrackerConfig config = new ConfigurationObjectFactory(System.getProperties()).build(EventTrackerConfig.class);
         sender = new MockCollectorSender();
 
@@ -90,29 +88,6 @@ public class TestSmileBuffering
     }
 
     @Test(groups = "slow")
-    public void testOfferSmile() throws IOException, InterruptedException
-    {
-        Event event = createSmileEvent();
-
-        sendMultipleEvents(event);
-
-        // It should have sent all events in one shot (all events are compressed at each flush)
-        Assert.assertEquals(sender.getSuccessCount(), 1);
-
-        // Check the correctness of events
-        Assert.assertEquals(sender.getReceivedEvent().getClass(), SmileBucketEvent.class);
-        SmileBucketEvent eventSent = (SmileBucketEvent) sender.getReceivedEvent();
-        Assert.assertEquals(eventSent.getNumberOfEvent(), EVENTS_TO_SEND);
-        Assert.assertEquals(eventSent.getName(), event.getName());
-        for (JsonNode node : eventSent.getBucket()) {
-            SmileEnvelopeEvent zeEvent = new SmileEnvelopeEvent(EVENT_NAME, node);
-            Assert.assertEquals(zeEvent.getEventDateTime(), event.getEventDateTime());
-            Assert.assertEquals(zeEvent.getGranularity(), event.getGranularity());
-            Assert.assertEquals(zeEvent.getSerializedEvent(), event.getSerializedEvent());
-        }
-    }
-
-    @Test(groups = "slow")
     // This test makes sure Smile buffering doesn't affect Thrift
     public void testOfferThrift() throws IOException, InterruptedException
     {
@@ -128,6 +103,7 @@ public class TestSmileBuffering
         Assert.assertEquals(sender.getReceivedEvent().getEventDateTime(), event.getEventDateTime());
         Assert.assertEquals(sender.getReceivedEvent().getData(), event.getData());
     }
+
     private void sendMultipleEvents(Event event) throws IOException, InterruptedException
     {
         // Not sure why that's needed but it is.

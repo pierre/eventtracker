@@ -18,7 +18,6 @@ package com.ning.metrics.eventtracker;
 
 import com.ning.metrics.serialization.event.Event;
 import com.ning.metrics.serialization.event.Events;
-import com.ning.metrics.serialization.event.SmileBucketEvent;
 import com.ning.metrics.serialization.writer.CallbackHandler;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.log4j.Logger;
@@ -70,17 +69,17 @@ public class ScribeSender implements EventSender
         // may trigger a RST if idle more than a few minutes.
         final ScheduledExecutorService executor = new ScheduledThreadPoolExecutor(1, Executors.defaultThreadFactory());
         executor.scheduleAtFixedRate(new Runnable()
-        {
-            @Override
-            public void run()
             {
-                if (sleeping.get()) {
-                    log.info("Idle connection to Scribe, re-opening it");
-                    createConnection();
+                @Override
+                public void run()
+                {
+                    if (sleeping.get()) {
+                        log.info("Idle connection to Scribe, re-opening it");
+                        createConnection();
+                    }
+                    sleeping.set(true);
                 }
-                sleeping.set(true);
-            }
-        }, maxIdleTimeInMinutes, maxIdleTimeInMinutes, TimeUnit.MINUTES);
+            }, maxIdleTimeInMinutes, maxIdleTimeInMinutes, TimeUnit.MINUTES);
     }
 
     /**
@@ -208,15 +207,9 @@ public class ScribeSender implements EventSender
 
         String scribePayload = new String(payload, CHARSET);
 
-        // TODO Ugly code...
-        if (event instanceof SmileBucketEvent) {
-            return scribePayload;
-        }
-        else {
-            // To avoid costly Thrift deserialization on the collector side, we embed the
-            // timestamp in the format, outside of the payload. We need it for HDFS routing.
-            return String.format("%s:%s", event.getEventDateTime().getMillis(), scribePayload);
-        }
+        // To avoid costly Thrift deserialization on the collector side, we embed the
+        // timestamp in the format, outside of the payload. We need it for HDFS routing.
+        return String.format("%s:%s", event.getEventDateTime().getMillis(), scribePayload);
     }
 
     @Managed(description = "Get the number of messages successfully sent since startup to Scribe")

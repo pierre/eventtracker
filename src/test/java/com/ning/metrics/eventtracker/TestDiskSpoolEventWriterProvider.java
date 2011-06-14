@@ -1,9 +1,8 @@
 package com.ning.metrics.eventtracker;
 
-import com.ning.metrics.serialization.event.Event;
 import com.ning.metrics.serialization.event.SmileEnvelopeEvent;
 import com.ning.metrics.serialization.event.ThriftEnvelopeEvent;
-import com.ning.metrics.serialization.smile.SmileEnvelopeEventExtractor;
+import com.ning.metrics.serialization.smile.SmileEnvelopeEventDeserializer;
 import com.ning.metrics.serialization.thrift.ThriftEnvelope;
 import com.ning.metrics.serialization.thrift.ThriftField;
 import com.ning.metrics.serialization.writer.CallbackHandler;
@@ -17,7 +16,6 @@ import org.testng.annotations.Test;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -74,13 +72,13 @@ public class TestDiskSpoolEventWriterProvider
 
                 // extract the events to check that files are formatted correctly
                 try {
-                    SmileEnvelopeEventExtractor extractor = new SmileEnvelopeEventExtractor(new FileInputStream(file), true);
+                    SmileEnvelopeEventDeserializer extractor = new SmileEnvelopeEventDeserializer(new FileInputStream(file), true);
 
                     int numEventsExtracted = 0;
-                    SmileEnvelopeEvent event = extractor.extractNextEvent();
+                    SmileEnvelopeEvent event = extractor.getNextEvent();
                     while (event != null) {
                         numEventsExtracted++;
-                        event = extractor.extractNextEvent();
+                        event = extractor.getNextEvent();
                     }
 
                     Assert.assertEquals(numEventsExtracted, numberOfSmileEventsToSend);
@@ -123,20 +121,20 @@ public class TestDiskSpoolEventWriterProvider
         config = new ConfigurationObjectFactory(System.getProperties()).build(EventTrackerConfig.class);
 
         // Create a Thrift event
-        List<ThriftField> thriftFieldList = new ArrayList<ThriftField>();
+        final List<ThriftField> thriftFieldList = new ArrayList<ThriftField>();
         thriftFieldList.add(ThriftField.createThriftField("hello", (short) 1));
         thriftFieldList.add(ThriftField.createThriftField("world", (short) 12));
-        ThriftEnvelope envelope = new ThriftEnvelope(EVENT_NAME, thriftFieldList);
-        ThriftEnvelopeEvent event = new ThriftEnvelopeEvent(EVENT_DATE_TIME, envelope);
+        final ThriftEnvelope envelope = new ThriftEnvelope(EVENT_NAME, thriftFieldList);
+        final ThriftEnvelopeEvent event = new ThriftEnvelopeEvent(EVENT_DATE_TIME, envelope);
 
         final int numberOfThriftEventsToSend = 3;
 
         // Create the DiskSpoolEventWriter
         final AtomicInteger sendCalls = new AtomicInteger(0);
-        DiskSpoolEventWriter diskSpoolEventWriter = diskWriterProvider(new EventSender()
+        final DiskSpoolEventWriter diskSpoolEventWriter = diskWriterProvider(new EventSender()
         {
             @Override
-            public void send(File file, CallbackHandler handler)
+            public void send(final File file, final CallbackHandler handler)
             {
                 sendCalls.incrementAndGet();
             }
@@ -154,8 +152,6 @@ public class TestDiskSpoolEventWriterProvider
         diskSpoolEventWriter.commit();
         diskSpoolEventWriter.flush();
 
-        // TODO all events are bundled into one file
-        // but we don't want this...do we?
         Assert.assertEquals(sendCalls.get(), 1);
 
         // Flush another series
@@ -165,8 +161,7 @@ public class TestDiskSpoolEventWriterProvider
         diskSpoolEventWriter.commit();
         diskSpoolEventWriter.flush();
 
-        // One call per event, no buffering
-        Assert.assertEquals(sendCalls.get(), numberOfThriftEventsToSend + numberOfThriftEventsToSend);
+        Assert.assertEquals(sendCalls.get(), 2);
     }
 
     /**

@@ -29,7 +29,7 @@ class MockCollectorClient
     {
     }
 
-    public void setFail(boolean fail)
+    public void setFail(final boolean fail)
     {
         this.fail = fail;
     }
@@ -39,7 +39,7 @@ class MockCollectorClient
         successCount.set(0);
     }
 
-    public boolean postThrift(Event event)
+    public boolean postThrift(final Event event)
     {
         if (fail) {
             return false;

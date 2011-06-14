@@ -18,15 +18,17 @@ package com.ning.metrics.eventtracker;
 
 import com.google.inject.Inject;
 import com.ning.metrics.serialization.event.Event;
+import com.ning.metrics.serialization.event.Events;
 import com.ning.metrics.serialization.writer.CallbackHandler;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 class MockCollectorSender implements EventSender
 {
-    private MockCollectorClient collectorClient;
-    private File receivedEvent;
+    private final MockCollectorClient collectorClient;
+    private Event receivedEvent;
     private final AtomicBoolean isClosed = new AtomicBoolean(true);
 
     @Inject
@@ -36,11 +38,19 @@ class MockCollectorSender implements EventSender
     }
 
     @Override
-    public void send(File event, CallbackHandler handler)
+    public void send(final File file, final CallbackHandler handler)
     {
-        receivedEvent = event;
-//        collectorClient.postThrift(event);
-        handler.onSuccess(event);
+        try {
+            receivedEvent = Events.fromFile(file).get(0);
+            collectorClient.postThrift(receivedEvent);
+            handler.onSuccess(file);
+        }
+        catch (IOException e) {
+            handler.onError(e, file);
+        }
+        catch (ClassNotFoundException e) {
+            handler.onError(e, file);
+        }
     }
 
     @Override
@@ -49,7 +59,7 @@ class MockCollectorSender implements EventSender
         isClosed.set(true);
     }
 
-    public void setFail(boolean fail)
+    public void setFail(final boolean fail)
     {
         collectorClient.setFail(fail);
     }
@@ -66,7 +76,7 @@ class MockCollectorSender implements EventSender
 
     public Event getReceivedEvent()
     {
-        return null;//receivedEvent;
+        return receivedEvent;
     }
 
     public boolean isClosed()

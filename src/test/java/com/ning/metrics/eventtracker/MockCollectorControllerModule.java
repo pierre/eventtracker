@@ -26,7 +26,6 @@ import com.ning.metrics.serialization.writer.SyncType;
 import org.skife.config.ConfigurationObjectFactory;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -74,7 +73,7 @@ public class MockCollectorControllerModule extends AbstractModule
 
         bind(CollectorController.class).toProvider(CollectorControllerProvider.class).asEagerSingleton();
 
-        bind(DiskSpoolEventWriter.class).toInstance(new MockDiskSpoolEventWriter(new EventHandler()
+        bind(DiskSpoolEventWriter.class).toInstance(new DiskSpoolEventWriter(new EventHandler()
         {
             @Override
             public void handle(File file, CallbackHandler handler)
@@ -85,38 +84,5 @@ public class MockCollectorControllerModule extends AbstractModule
         }, config.getSpoolDirectoryName(), config.isFlushEnabled(), config.getFlushIntervalInSeconds(), executor,
             SyncType.valueOf(config.getSyncType()), config.getSyncBatchSize(), config.getRateWindowSizeMinutes()));
         bind(EventWriter.class).toProvider(ThresholdEventWriterProvider.class);
-    }
-
-    static class MockDiskSpoolEventWriter extends DiskSpoolEventWriter
-    {
-        private final EventHandler delegate;
-
-        public MockDiskSpoolEventWriter(EventHandler eventHandler, String spoolPath, boolean flushEnabled, long flushIntervalInSeconds, ScheduledExecutorService executor, SyncType syncType, int syncBatchSize, int rateWindowSizeMinutes)
-        {
-            super(eventHandler, spoolPath, flushEnabled, flushIntervalInSeconds, executor, syncType, syncBatchSize, rateWindowSizeMinutes);
-            this.delegate = eventHandler;
-        }
-
-        /**
-         * We need to override the flush method as we don't want to deal with files
-         *
-         * @throws IOException generic IOException
-         */
-        @Override
-        public void flush()
-        {
-            delegate.handle(null, new CallbackHandler()
-            {
-                @Override
-                public void onError(Throwable t, File event)
-                {
-                }
-
-                @Override
-                public void onSuccess(File event)
-                {
-                }
-            });
-        }
     }
 }
