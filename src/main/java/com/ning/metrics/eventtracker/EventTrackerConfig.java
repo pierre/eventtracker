@@ -19,7 +19,7 @@ package com.ning.metrics.eventtracker;
 import org.skife.config.Config;
 import org.skife.config.Default;
 
-interface EventTrackerConfig
+public interface EventTrackerConfig
 {
     /**
      * Configure the type of the eventtracker. Valid values are:
