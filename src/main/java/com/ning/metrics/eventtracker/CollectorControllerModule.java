@@ -17,14 +17,13 @@
 package com.ning.metrics.eventtracker;
 
 import com.google.inject.AbstractModule;
+import com.mogwee.executors.FailsafeScheduledExecutor;
 import com.ning.metrics.serialization.writer.DiskSpoolEventWriter;
 import com.ning.metrics.serialization.writer.EventWriter;
 import org.apache.log4j.Logger;
 import org.skife.config.ConfigurationObjectFactory;
 
-import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ScheduledThreadPoolExecutor;
 
 /**
  * Wires all pieces related to talking to the Collector core.
@@ -73,7 +72,7 @@ public class CollectorControllerModule extends AbstractModule
                 throw new IllegalStateException("Unknown type " + type);
         }
 
-        bind(ScheduledExecutorService.class).toInstance(new ScheduledThreadPoolExecutor(1, Executors.defaultThreadFactory()));
+        bind(ScheduledExecutorService.class).toInstance(new FailsafeScheduledExecutor(1, "EventtrackerFlusher"));
 
         bind(CollectorController.class).toProvider(CollectorControllerProvider.class).asEagerSingleton();
 

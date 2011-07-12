@@ -16,6 +16,7 @@
 
 package com.ning.metrics.eventtracker;
 
+import com.mogwee.executors.FailsafeScheduledExecutor;
 import com.ning.metrics.serialization.event.Event;
 import com.ning.metrics.serialization.event.Events;
 import com.ning.metrics.serialization.writer.CallbackHandler;
@@ -32,9 +33,7 @@ import java.io.ObjectOutputStream;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -67,7 +66,7 @@ public class ScribeSender implements EventSender
 
         // Setup a watchdog for the Scribe connection. We don't want to keep it open forever. For instance, SLB VIP
         // may trigger a RST if idle more than a few minutes.
-        final ScheduledExecutorService executor = new ScheduledThreadPoolExecutor(1, Executors.defaultThreadFactory());
+        final ScheduledExecutorService executor = new FailsafeScheduledExecutor(1, "ScribeWatchdog");
         executor.scheduleAtFixedRate(new Runnable()
             {
                 @Override

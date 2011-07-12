@@ -16,6 +16,7 @@
 
 package com.ning.metrics.eventtracker;
 
+import com.mogwee.executors.FailsafeScheduledExecutor;
 import com.ning.metrics.serialization.util.FixedManagedJmxExport;
 import com.ning.metrics.serialization.writer.CallbackHandler;
 import com.ning.metrics.serialization.writer.DiskSpoolEventWriter;
@@ -25,8 +26,6 @@ import com.ning.metrics.serialization.writer.ThresholdEventWriter;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledThreadPoolExecutor;
 
 public class ScribeCollectorFactory
 {
@@ -58,7 +57,7 @@ public class ScribeCollectorFactory
                 eventSender.send(file, handler);
             }
         }, config.getSpoolDirectoryName(), config.isFlushEnabled(), config.getFlushIntervalInSeconds(),
-            new ScheduledThreadPoolExecutor(1, Executors.defaultThreadFactory()), SyncType.valueOf(config.getSyncType()),
+            new FailsafeScheduledExecutor(1, "EventtrackerFlusher"), SyncType.valueOf(config.getSyncType()),
             config.getSyncBatchSize(), config.getRateWindowSizeMinutes());
         final ThresholdEventWriter thresholdEventWriter = new ThresholdEventWriter(eventWriter, config.getFlushEventQueueSize(), config.getRefreshDelayInSeconds());
 
