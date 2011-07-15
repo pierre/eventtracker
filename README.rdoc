@@ -4,14 +4,36 @@ The eventtracker library is a Java library to send events to the Collector (http
 
 Please refer to the serialization library FAQ for an overview of the Event concept: http://pierre.github.com/dwarf/serialization/faq.html
 
+= 4.x.x release
+
+Starting with 4.0.0, the eventtracker library is now broken into submodules:
+
+* com.ning:metrics.eventtracker-common: common classes, not useful by itself
+* com.ning:metrics.eventtracker-http: http sender classes, not useful by itself
+* com.ning:metrics.eventtracker-scribe: Thrift/Scribe sender (functionality equivalent to pre 4.0.0)
+* com.ning:metrics.eventtracker-smile: http sender, using Json/Smile serialization protocol (uses the collector POST API)
+
 = Usage
+
+== Scribe
+
+For Guice integration, you need to install the CollectorControllerScribeModule module.
+To expose JMX stats, you need to install the CollectorControllerScribeMBeanModule module.
+
+== Smile over HTTP
+
+For Guice integration, you need to install the CollectorControllerSmileModule module.
+To expose JMX stats, you need to install the CollectorControllerHttpMBeanModule module.
+
+== Maven
 
 The eventtracker library is synced to Maven Central. Simply add the dependency to your pom.xml:
 
     <dependency>
         <groupId>com.ning</groupId>
-        <artifactId>metrics.eventtracker</artifactId>
-        <version>3.1.0</version>
+        <!-- Pick one! -->
+        <artifactId>metrics.eventtracker-{http,scribe}</artifactId>
+        <version>4.0.0</version>
     </dependency>
 
 The library offers a simple method to send events. Here is a complete working example to send one Thrift event (we assume myShinyEvent is a Thrift object):
