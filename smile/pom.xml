@@ -51,6 +51,10 @@
         </dependency>
         <dependency>
             <groupId>com.ning</groupId>
+            <artifactId>metrics.serialization-smile</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.ning</groupId>
             <artifactId>metrics.serialization-writer</artifactId>
         </dependency>
         <dependency>
@@ -78,4 +82,64 @@
             <scope>test</scope>
         </dependency>
     </dependencies>
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-shade-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>assemble-metrics-eventtracker-smile</id>
+                        <goals>
+                            <goal>shade</goal>
+                        </goals>
+                        <phase>package</phase>
+                        <configuration>
+                            <createDependencyReducedPom>true</createDependencyReducedPom>
+                            <createSourcesJar>true</createSourcesJar>
+                            <shadedArtifactAttached>true</shadedArtifactAttached>
+                            <shadedClassifierName>jar-with-dependencies</shadedClassifierName>
+                            <artifactSet>
+                                <excludes>
+                                    <exclude>com.google.inject:guice</exclude>
+                                    <exclude>org.skife.config:config-magic</exclude>
+                                </excludes>
+                            </artifactSet>
+                            <!-- If you use this shaded jar in your library, use the factory, not the Guice module,
+                              as we relocation jmxutils (the MBean module won't work) -->
+                            <relocations>
+                                <relocation>
+                                    <pattern>org.weakref.jmx</pattern>
+                                    <shadedPattern>com.ning.metrics.eventtracker.smile.org.weakref.jmx</shadedPattern>
+                                </relocation>
+                                <relocation>
+                                    <pattern>com.ning.http.client</pattern>
+                                    <shadedPattern>com.ning.metrics.eventtracker.smile.com.ning.http.client
+                                    </shadedPattern>
+                                </relocation>
+                                <relocation>
+                                    <pattern>org.apache.commons</pattern>
+                                    <shadedPattern>com.ning.metrics.eventtracker.smile.org.apache.commons
+                                    </shadedPattern>
+                                </relocation>
+                                <relocation>
+                                    <pattern>org.codehaus.jackson</pattern>
+                                    <shadedPattern>com.ning.metrics.eventtracker.smile.org.codehaus.jackson
+                                    </shadedPattern>
+                                </relocation>
+                                <relocation>
+                                    <pattern>org.jboss.netty</pattern>
+                                    <shadedPattern>com.ning.metrics.eventtracker.smile.org.jboss.netty</shadedPattern>
+                                </relocation>
+                                <relocation>
+                                    <pattern>org.joda.time</pattern>
+                                    <shadedPattern>com.ning.metrics.eventtracker.smile.org.joda.time</shadedPattern>
+                                </relocation>
+                            </relocations>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
 </project>
