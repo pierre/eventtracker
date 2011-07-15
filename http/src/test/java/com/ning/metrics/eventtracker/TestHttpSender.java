@@ -63,12 +63,13 @@ public class TestHttpSender
         server.addConnector(listener);
 
         // Set up server that will return 404
-        errorServer = new Server(){
+        errorServer = new Server()
+        {
             public void handle(HttpConnection connection) throws IOException, ServletException
             {
-                final String target=connection.getRequest().getPathInfo();
-                final Request request=connection.getRequest();
-                final Response response=connection.getResponse();
+                final String target = connection.getRequest().getPathInfo();
+                final Request request = connection.getRequest();
+                final Response response = connection.getResponse();
                 response.setStatus(404);
 
                 handle(target, request, request, response);
@@ -76,10 +77,10 @@ public class TestHttpSender
         };
         errorServer.addConnector(listener);
 
-        System.setProperty("eventtracker.collector.port",Integer.toString(port));
+        System.setProperty("eventtracker.collector.port", Integer.toString(port));
         EventTrackerConfig config = new ConfigurationObjectFactory(System.getProperties()).build(EventTrackerConfig.class);
         // Set up sender
-        sender = new HttpSender(config);
+        sender = new HttpSender(config.getCollectorHost(), config.getCollectorPort(), config.getEventType(), config.getHttpMaxWaitTimeInMillis());
         failureCallbackHandler = new CallbackHandler()
         {
             @Override

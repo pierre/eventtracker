@@ -45,7 +45,13 @@ public class CollectorControllerHttpModule extends AbstractModule
     {
         switch (eventTrackerConfig.getType()) {
             case COLLECTOR:
-                bind(EventSender.class).to(HttpSender.class).asEagerSingleton();
+                final EventSender httpSender = new HttpSender(
+                    eventTrackerConfig.getCollectorHost(),
+                    eventTrackerConfig.getCollectorPort(),
+                    eventTrackerConfig.getEventType(),
+                    eventTrackerConfig.getHttpMaxWaitTimeInMillis()
+                );
+                bind(EventSender.class).toInstance(httpSender);
                 log.info("Enabled HTTP Event Logging");
                 break;
             case NO_LOGGING:

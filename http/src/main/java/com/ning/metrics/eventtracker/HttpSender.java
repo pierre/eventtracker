@@ -16,7 +16,6 @@
 
 package com.ning.metrics.eventtracker;
 
-import com.google.inject.Inject;
 import com.ning.http.client.AsyncCompletionHandler;
 import com.ning.http.client.AsyncHttpClient;
 import com.ning.http.client.AsyncHttpClientConfig;
@@ -49,17 +48,18 @@ class HttpSender implements EventSender
     public static final String URI_PATH = "/rest/1.0/event";
     private static final int DEFAULT_IDLE_CONNECTION_IN_POOL_TIMEOUT_IN_MS = 120000; // 2 minutes
 
-    private final EventTrackerConfig config;
+    private final EventType eventType;
+    private final long httpMaxWaitTimeInMillis;
     private final String collectorURI;
     private final AsyncHttpClientConfig clientConfig;
 
     private AsyncHttpClient client;
 
-    @Inject
-    public HttpSender(final EventTrackerConfig config)
+    public HttpSender(final String collectorHost, final int collectorPort, final EventType eventType, final long httpMaxWaitTimeInMillis)
     {
-        this.config = config;
-        collectorURI = String.format("http://%s:%d%s", config.getCollectorHost(), config.getCollectorPort(), URI_PATH);
+        this.eventType = eventType;
+        this.httpMaxWaitTimeInMillis = httpMaxWaitTimeInMillis;
+        collectorURI = String.format("http://%s:%d%s", collectorHost, collectorPort, URI_PATH);
         // CAUTION: it is not enforced that the actual event encoding type on the wire matches what the config says it is
         // the event encoding type is determined by the Event's writeExternal() method.
         clientConfig = new AsyncHttpClientConfig.Builder()
@@ -129,7 +129,7 @@ class HttpSender implements EventSender
                     log.info(String.format("%d HTTP request(s) in progress, giving them some time to finish...", activeRequests.get()));
                 }
 
-                long sleptInMillins = config.getHttpMaxWaitTimeInMillis();
+                long sleptInMillins = httpMaxWaitTimeInMillis;
                 while (activeRequests.get() > 0 && sleptInMillins >= 0) {
                     Thread.sleep(200);
                     sleptInMillins -= 200;
@@ -153,7 +153,7 @@ class HttpSender implements EventSender
     {
         final AsyncHttpClient.BoundRequestBuilder requestBuilder = client
             .preparePost(collectorURI).setBody(file)
-            .setHeader("Content-Type", headers.get(config.getEventType())); // zero-bytes-copy
+            .setHeader("Content-Type", headers.get(eventType)); // zero-bytes-copy
         return requestBuilder.build();
     }
 }
