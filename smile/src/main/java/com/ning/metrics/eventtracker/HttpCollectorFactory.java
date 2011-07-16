@@ -17,9 +17,12 @@
 package com.ning.metrics.eventtracker;
 
 import com.mogwee.executors.FailsafeScheduledExecutor;
+import com.ning.metrics.serialization.event.EventSerializer;
+import com.ning.metrics.serialization.smile.SmileEnvelopeEventSerializer;
 import com.ning.metrics.serialization.writer.CallbackHandler;
 import com.ning.metrics.serialization.writer.DiskSpoolEventWriter;
 import com.ning.metrics.serialization.writer.EventHandler;
+import com.ning.metrics.serialization.writer.ObjectOutputEventSerializer;
 import com.ning.metrics.serialization.writer.SyncType;
 import com.ning.metrics.serialization.writer.ThresholdEventWriter;
 
@@ -82,6 +85,16 @@ public class HttpCollectorFactory
     {
         eventSender = new HttpSender(collectorHost, collectorPort, eventType, httpMaxWaitTimeInMillis);
 
+        EventSerializer serializer = new ObjectOutputEventSerializer();
+        switch (eventType) {
+            case SMILE:
+                serializer = new SmileEnvelopeEventSerializer(false);
+                break;
+            case JSON:
+                serializer = new SmileEnvelopeEventSerializer(true);
+                break;
+        }
+
         final DiskSpoolEventWriter eventWriter = new DiskSpoolEventWriter(new EventHandler()
         {
             @Override
@@ -90,7 +103,7 @@ public class HttpCollectorFactory
                 eventSender.send(file, handler);
             }
         }, spoolDirectoryName, isFlushEnabled, flushIntervalInSeconds,
-            new FailsafeScheduledExecutor(1, "EventtrackerFlusher"), syncType, syncBatchSize, 5);
+            new FailsafeScheduledExecutor(1, "EventtrackerFlusher"), syncType, syncBatchSize, 5, serializer);
 
         final ThresholdEventWriter thresholdEventWriter = new ThresholdEventWriter(eventWriter, flushEventQueueSize, refreshDelayInSeconds);
         controller = new CollectorController(thresholdEventWriter);
