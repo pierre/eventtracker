@@ -49,6 +49,7 @@
         <module>common</module>
         <module>http</module>
         <module>scribe</module>
+        <module>simple</module>
         <module>smile</module>
     </modules>
     <dependencyManagement>
