@@ -84,6 +84,7 @@ class HttpSender implements EventSender
         }
 
         try {
+            log.info("Sending local file to collector: {}", file.getAbsolutePath());
             client.executeRequest(createPostRequest(file),
                 new AsyncCompletionHandler<Response>()
                 {
