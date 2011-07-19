@@ -16,8 +16,6 @@
 
 package com.ning.metrics.eventtracker;
 
-import com.google.inject.AbstractModule;
-import com.google.inject.Inject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -28,21 +26,15 @@ import org.slf4j.LoggerFactory;
  * Note that Guice injection is optional, you can directly instantiate a CollectorController
  * via the factories.
  */
-public class CollectorControllerHttpModule extends AbstractModule
+public class CollectorControllerHttpModule extends CollectorControllerModule
 {
     private static final Logger log = LoggerFactory.getLogger(CollectorControllerHttpModule.class);
-
-    private final EventTrackerConfig eventTrackerConfig;
-
-    @Inject
-    public CollectorControllerHttpModule(final EventTrackerConfig eventTrackerConfig)
-    {
-        this.eventTrackerConfig = eventTrackerConfig;
-    }
 
     @Override
     protected void configure()
     {
+        super.configure();
+
         switch (eventTrackerConfig.getType()) {
             case COLLECTOR:
                 final EventSender httpSender = new HttpSender(
@@ -61,7 +53,5 @@ public class CollectorControllerHttpModule extends AbstractModule
             default:
                 throw new IllegalStateException("Unknown type " + eventTrackerConfig.getType());
         }
-
-        install(new CollectorControllerModule());
     }
 }

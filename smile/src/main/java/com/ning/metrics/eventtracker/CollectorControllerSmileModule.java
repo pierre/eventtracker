@@ -16,8 +16,6 @@
 
 package com.ning.metrics.eventtracker;
 
-import com.google.inject.AbstractModule;
-import com.google.inject.Inject;
 import com.ning.metrics.serialization.event.EventSerializer;
 import com.ning.metrics.serialization.smile.SmileEnvelopeEventSerializer;
 import com.ning.metrics.serialization.writer.ObjectOutputEventSerializer;
@@ -26,19 +24,13 @@ import com.ning.metrics.serialization.writer.ObjectOutputEventSerializer;
  * Wires all pieces related to talking to the Collector core.
  * See http://github.com/pierre/collector
  */
-public class CollectorControllerSmileModule extends AbstractModule
+public class CollectorControllerSmileModule extends CollectorControllerHttpModule
 {
-    private final EventTrackerConfig eventTrackerConfig;
-
-    @Inject
-    public CollectorControllerSmileModule(final EventTrackerConfig eventTrackerConfig)
-    {
-        this.eventTrackerConfig = eventTrackerConfig;
-    }
-
     @Override
     protected void configure()
     {
+        super.configure();
+
         switch (eventTrackerConfig.getEventType()) {
             case SMILE:
                 bind(EventSerializer.class).toInstance(new SmileEnvelopeEventSerializer(false));
@@ -50,7 +42,5 @@ public class CollectorControllerSmileModule extends AbstractModule
                 bind(EventSerializer.class).to(ObjectOutputEventSerializer.class);
                 break;
         }
-
-        install(new CollectorControllerHttpModule(eventTrackerConfig));
     }
 }

@@ -33,6 +33,8 @@ import java.util.concurrent.ScheduledExecutorService;
  */
 class CollectorControllerModule extends AbstractModule
 {
+    EventTrackerConfig eventTrackerConfig;
+
     public static enum Type
     {
         SCRIBE,
@@ -43,7 +45,7 @@ class CollectorControllerModule extends AbstractModule
     @Override
     protected void configure()
     {
-        final EventTrackerConfig eventTrackerConfig = new ConfigurationObjectFactory(System.getProperties()).build(EventTrackerConfig.class);
+        eventTrackerConfig = new ConfigurationObjectFactory(System.getProperties()).build(EventTrackerConfig.class);
         bind(EventTrackerConfig.class).toInstance(eventTrackerConfig);
 
         bind(ScheduledExecutorService.class).toInstance(new FailsafeScheduledExecutor(1, "EventtrackerFlusher"));
