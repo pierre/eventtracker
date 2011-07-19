@@ -355,6 +355,7 @@
                                 <exclude>src/site/**</exclude>
                                 <exclude>*.log</exclude>
                                 <exclude>**/*.thrift</exclude>
+                                <exclude>**/dependency-reduced-pom.xml</exclude>
                             </excludes>
                         </configuration>
                     </execution>
