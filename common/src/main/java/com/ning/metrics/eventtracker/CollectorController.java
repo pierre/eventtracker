@@ -74,6 +74,19 @@ public class CollectorController
         }
     }
 
+    public void close()
+    {
+        setAcceptEvents(false);
+        try {
+            commit();
+            flush();
+            eventWriter.close();
+        }
+        catch (IOException e) {
+            log.warn("Got I/O exception closing the eventtracker library: " + e);
+        }
+    }
+
     public void setAcceptEvents(final boolean accept)
     {
         acceptEvents.set(accept);
