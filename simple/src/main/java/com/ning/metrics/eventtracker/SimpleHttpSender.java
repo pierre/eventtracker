@@ -24,7 +24,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicLong;
 
 public class SimpleHttpSender
@@ -58,11 +58,8 @@ public class SimpleHttpSender
      *
      * @param eventPayload Event to sent, created by the EventBuilder
      * @return true on success (collector got the event), false otherwise (event was lost)
-     * @throws InterruptedException if interrupted during the HTTP call
-     * @throws java.util.concurrent.ExecutionException
-     *                              generic ExecutionException
      */
-    public boolean send(final String eventPayload) throws ExecutionException, InterruptedException
+    public Future<Boolean> send(final String eventPayload)
     {
         if (client == null || client.isClosed()) {
             client = new AsyncHttpClient(clientConfig);
@@ -96,12 +93,12 @@ public class SimpleHttpSender
                     {
                         activeRequests.decrementAndGet();
                     }
-                }).get();
+                });
         }
         catch (IOException e) {
             // Recycle the client
             client.close();
-            return false;
+            return null;
         }
     }
 
