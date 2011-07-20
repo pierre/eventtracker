@@ -46,8 +46,8 @@ public class HttpCollectorFactory
         final int flushIntervalInSeconds,
         final SyncType syncType,
         final int syncBatchSize,
-        final long flushEventQueueSize,
-        final int refreshDelayInSeconds
+        final long maxUncommittedWriteCount,
+        final int maxUncommittedPeriodInSeconds
     ) throws IOException
     {
         if (singletonController == null) {
@@ -61,8 +61,8 @@ public class HttpCollectorFactory
                 flushIntervalInSeconds,
                 syncType,
                 syncBatchSize,
-                flushEventQueueSize,
-                refreshDelayInSeconds
+                maxUncommittedWriteCount,
+                maxUncommittedPeriodInSeconds
             ).get();
         }
 
@@ -79,8 +79,8 @@ public class HttpCollectorFactory
         final int flushIntervalInSeconds,
         final SyncType syncType,
         final int syncBatchSize,
-        final long flushEventQueueSize,
-        final int refreshDelayInSeconds
+        final long maxUncommittedWriteCount,
+        final int maxUncommittedPeriodInSeconds
     )
     {
         eventSender = new HttpSender(collectorHost, collectorPort, eventType, httpMaxWaitTimeInMillis);
@@ -102,10 +102,10 @@ public class HttpCollectorFactory
             {
                 eventSender.send(file, handler);
             }
-        }, spoolDirectoryName, isFlushEnabled, flushIntervalInSeconds,
-            new FailsafeScheduledExecutor(1, "EventtrackerFlusher"), syncType, syncBatchSize, 5, serializer);
+        }, spoolDirectoryName, isFlushEnabled, flushIntervalInSeconds, new FailsafeScheduledExecutor(1, "EventtrackerFlusher"),
+            syncType, syncBatchSize, serializer);
 
-        final ThresholdEventWriter thresholdEventWriter = new ThresholdEventWriter(eventWriter, flushEventQueueSize, refreshDelayInSeconds);
+        final ThresholdEventWriter thresholdEventWriter = new ThresholdEventWriter(eventWriter, maxUncommittedWriteCount, maxUncommittedPeriodInSeconds);
         controller = new CollectorController(thresholdEventWriter);
     }
 

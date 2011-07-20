@@ -20,6 +20,7 @@ import com.mogwee.executors.FailsafeScheduledExecutor;
 import com.ning.metrics.serialization.writer.CallbackHandler;
 import com.ning.metrics.serialization.writer.DiskSpoolEventWriter;
 import com.ning.metrics.serialization.writer.EventHandler;
+import com.ning.metrics.serialization.writer.ObjectOutputEventSerializer;
 import com.ning.metrics.serialization.writer.SyncType;
 import com.ning.metrics.serialization.writer.ThresholdEventWriter;
 
@@ -33,18 +34,54 @@ public class ScribeCollectorFactory
     private final CollectorController controller;
     private static ScribeSender eventSender;
 
-    public static synchronized CollectorController createScribeController(final EventTrackerConfig config) throws IOException
+    public static synchronized CollectorController createScribeController(
+        final String scribeHost,
+        final int scribePort,
+        final int scribeRefreshRate,
+        final int scribeMaxIdleTimeInMinutes,
+        final String spoolDirectoryName,
+        final boolean isFlushEnabled,
+        final int flushIntervalInSeconds,
+        final SyncType syncType,
+        final int syncBatchSize,
+        final long maxUncommittedWriteCount,
+        final int maxUncommittedPeriodInSeconds
+    ) throws IOException
     {
         if (singletonController == null) {
-            singletonController = new ScribeCollectorFactory(config).get();
+            singletonController = new ScribeCollectorFactory(
+                scribeHost,
+                scribePort,
+                scribeRefreshRate,
+                scribeMaxIdleTimeInMinutes,
+                spoolDirectoryName,
+                isFlushEnabled,
+                flushIntervalInSeconds,
+                syncType,
+                syncBatchSize,
+                maxUncommittedWriteCount,
+                maxUncommittedPeriodInSeconds
+            ).get();
         }
 
         return singletonController;
     }
 
-    ScribeCollectorFactory(final EventTrackerConfig config)
+    ScribeCollectorFactory(
+        final String scribeHost,
+        final int scribePort,
+        final int scribeRefreshRate,
+        final int scribeMaxIdleTimeInMinutes,
+        final String spoolDirectoryName,
+        final boolean isFlushEnabled,
+        final int flushIntervalInSeconds,
+        final SyncType syncType,
+        final int syncBatchSize,
+        final long maxUncommittedWriteCount,
+        final int maxUncommittedPeriodInSeconds
+    )
     {
-        eventSender = new ScribeSender(new ScribeClientImpl(config.getScribeHost(), config.getScribePort()), config.getScribeRefreshRate(), config.getScribeMaxIdleTimeInMinutes());
+        eventSender = new ScribeSender(new ScribeClientImpl(scribeHost, scribePort), scribeRefreshRate, scribeMaxIdleTimeInMinutes);
         eventSender.createConnection();
 
         final DiskSpoolEventWriter eventWriter = new DiskSpoolEventWriter(new EventHandler()
@@ -54,11 +91,10 @@ public class ScribeCollectorFactory
             {
                 eventSender.send(file, handler);
             }
-        }, config.getSpoolDirectoryName(), config.isFlushEnabled(), config.getFlushIntervalInSeconds(),
-            new FailsafeScheduledExecutor(1, "EventtrackerFlusher"), SyncType.valueOf(config.getSyncType()),
-            config.getSyncBatchSize(), config.getRateWindowSizeMinutes());
-        final ThresholdEventWriter thresholdEventWriter = new ThresholdEventWriter(eventWriter, config.getFlushEventQueueSize(), config.getRefreshDelayInSeconds());
+        }, spoolDirectoryName, isFlushEnabled, flushIntervalInSeconds, new FailsafeScheduledExecutor(1, "EventtrackerFlusher"),
+            syncType, syncBatchSize, new ObjectOutputEventSerializer());
 
+        final ThresholdEventWriter thresholdEventWriter = new ThresholdEventWriter(eventWriter, maxUncommittedWriteCount, maxUncommittedPeriodInSeconds);
         controller = new CollectorController(thresholdEventWriter);
     }
 
