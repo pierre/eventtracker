@@ -24,20 +24,20 @@ import com.ning.metrics.serialization.writer.ThresholdEventWriter;
 class ThresholdEventWriterProvider implements Provider<ThresholdEventWriter>
 {
     private final DiskSpoolEventWriter eventWriter;
-    private final long flushEventQueueSize;
-    private final int refreshDelayInSeconds;
+    private final long maxUncommittedWriteCount;
+    private final int maxUncommittedPeriodInSeconds;
 
     @Inject
     public ThresholdEventWriterProvider(final DiskSpoolEventWriter eventWriter, final EventTrackerConfig config)
     {
         this.eventWriter = eventWriter;
-        this.flushEventQueueSize = config.getFlushEventQueueSize();
-        this.refreshDelayInSeconds = config.getRefreshDelayInSeconds();
+        this.maxUncommittedWriteCount = config.getMaxUncommittedWriteCount();
+        this.maxUncommittedPeriodInSeconds = config.getMaxUncommittedPeriodInSeconds();
     }
 
     @Override
     public ThresholdEventWriter get()
     {
-        return new ThresholdEventWriter(eventWriter, flushEventQueueSize, refreshDelayInSeconds);
+        return new ThresholdEventWriter(eventWriter, maxUncommittedWriteCount, maxUncommittedPeriodInSeconds);
     }
 }

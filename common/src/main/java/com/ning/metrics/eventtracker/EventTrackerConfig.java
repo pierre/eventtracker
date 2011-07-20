@@ -35,43 +35,15 @@ public interface EventTrackerConfig
     @Default(value = "COLLECTOR")
     CollectorControllerModule.Type getType();
 
-    /**
-     * @return type of serialization to use (THRIFT, SMILE, JSON)
-     */
-    @Config(value = "eventtracker.event-type")
-    @Default(value = "SMILE")
-    EventType getEventType();
-
     //------------------- Spooling -------------------//
 
     /**
-     * Maximum number of events per file in the temporary spooling area. Past this threshold,
-     * buffered events are promoted to the final spool queue (where they are picked up by the final sender).
-     *
-     * @return the maximum number of events per file
-     * @see com.ning.metrics.serialization.writer.ThresholdEventWriter
-     */
-    @Config(value = "eventtracker.diskspool.flush-event-queue-size")
-    @Default(value = "10000")
-    long getFlushEventQueueSize();
-
-    /**
-     * Maxixum number of seconds before events are promoted from the temporary spooling area to the final spool queue.
-     *
-     * @return maxixmum age of events in seconds in the temporary spool queue
-     * @see com.ning.metrics.serialization.writer.ThresholdEventWriter
-     */
-    @Config(value = "eventtracker.diskspool.refresh-delay-seconds")
-    @Default(value = "60")
-    int getRefreshDelayInSeconds();
-
-    /**
-     * Directory for the Event Tracker to store events it can not send immediately
+     * Local buffering directory
      *
      * @return the directory path
      */
     @Config(value = "eventtracker.diskspool.path")
-    @Default(value = "/tmp/eventtracker/diskspool")
+    @Default(value = ".diskspool")
     String getSpoolDirectoryName();
 
     /**
@@ -111,9 +83,30 @@ public interface EventTrackerConfig
     @Default(value = "50")
     int getSyncBatchSize();
 
-    @Config(value = "eventtracker.event-end-point.rate-window-size-minutes")
-    @Default(value = "5")
-    int getRateWindowSizeMinutes();
+    /**
+     * Maximum number of events in the file being written (_tmp directory).
+     * <p/>
+     * Maximum number of events per file in the temporary spooling area. Past this threshold,
+     * buffered events are promoted to the final spool queue (where they are picked up by the final sender).
+     *
+     * @return the maximum number of events per file
+     * @see com.ning.metrics.serialization.writer.ThresholdEventWriter
+     */
+    @Config(value = "eventtracker.diskspool.max-uncommitted-write-count")
+    @Default(value = "10000")
+    long getMaxUncommittedWriteCount();
+
+    /**
+     * Maximum age of events in the file being written (_tmp directory).
+     * <p/>
+     * Maxixum number of seconds before events are promoted from the temporary spooling area to the final spool queue.
+     *
+     * @return maxixmum age of events in seconds in the temporary spool queue
+     * @see com.ning.metrics.serialization.writer.ThresholdEventWriter
+     */
+    @Config(value = "eventtracker.diskspool.max-uncommitted-period-seconds")
+    @Default(value = "60")
+    int getMaxUncommittedPeriodInSeconds();
 
     //------------------- HTTP Sender -------------------//
 
@@ -134,6 +127,15 @@ public interface EventTrackerConfig
     @Config(value = "eventtracker.collector.port")
     @Default(value = "8080")
     int getCollectorPort();
+
+    /**
+     * Type of payload, valid only for HTTP protocol
+     *
+     * @return type of serialization to use (THRIFT, SMILE, JSON)
+     */
+    @Config(value = "eventtracker.event-type")
+    @Default(value = "SMILE")
+    EventType getEventType();
 
     /**
      * Max busy wait time for Http requests to finish when shutting down the eventtracker
