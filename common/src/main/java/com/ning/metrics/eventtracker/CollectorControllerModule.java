@@ -53,6 +53,6 @@ class CollectorControllerModule extends AbstractModule
         bind(CollectorController.class).toProvider(CollectorControllerProvider.class).asEagerSingleton();
 
         bind(DiskSpoolEventWriter.class).toProvider(DiskSpoolEventWriterProvider.class).asEagerSingleton();
-        bind(EventWriter.class).toProvider(ThresholdEventWriterProvider.class);
+        bind(EventWriter.class).toProvider(ThresholdEventWriterProvider.class).asEagerSingleton();
     }
 }

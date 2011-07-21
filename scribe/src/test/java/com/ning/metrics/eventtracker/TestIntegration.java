@@ -19,6 +19,7 @@ package com.ning.metrics.eventtracker;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
 import com.ning.metrics.serialization.event.ThriftToThriftEnvelopeEvent;
+import com.ning.metrics.serialization.writer.SyncType;
 import org.joda.time.DateTime;
 import org.skife.config.ConfigurationObjectFactory;
 import org.testng.Assert;
@@ -61,9 +62,9 @@ public class TestIntegration
         System.setProperty("eventtracker.scribe.host", "127.0.0.1");
         System.setProperty("eventtracker.scribe.port", "7911");
 
-        Injector injector = Guice.createInjector(new CollectorControllerModule());
-        CollectorController controller = injector.getInstance(CollectorController.class);
-        ScribeSender sender = (ScribeSender) injector.getInstance(EventSender.class);
+        final Injector injector = Guice.createInjector(new CollectorControllerModule());
+        final CollectorController controller = injector.getInstance(CollectorController.class);
+        final ScribeSender sender = (ScribeSender) injector.getInstance(EventSender.class);
 
         sender.createConnection();
 
@@ -80,13 +81,25 @@ public class TestIntegration
         System.setProperty("eventtracker.collector.host", "127.0.0.1");
         System.setProperty("eventtracker.collector.port", "8080");
 
-        EventTrackerConfig config = new ConfigurationObjectFactory(System.getProperties()).build(EventTrackerConfig.class);
-        CollectorController controller = ScribeCollectorFactory.createScribeController(config);
+        final EventTrackerConfig config = new ConfigurationObjectFactory(System.getProperties()).build(EventTrackerConfig.class);
+        final CollectorController controller = ScribeCollectorFactory.createScribeController(
+            config.getScribeHost(),
+            config.getScribePort(),
+            config.getScribeRefreshRate(),
+            config.getScribeMaxIdleTimeInMinutes(),
+            config.getSpoolDirectoryName(),
+            config.isFlushEnabled(),
+            config.getFlushIntervalInSeconds(),
+            SyncType.valueOf(config.getSyncType()),
+            config.getSyncBatchSize(),
+            config.getMaxUncommittedWriteCount(),
+            config.getMaxUncommittedPeriodInSeconds()
+        );
 
         fireThriftEvents(controller);
     }
 
-    private void fireThriftEvents(CollectorController controller) throws Exception
+    private void fireThriftEvents(final CollectorController controller) throws Exception
     {
         controller.offerEvent(ThriftToThriftEnvelopeEvent.extractEvent("thrift", new DateTime(), new Click(UUID.randomUUID().toString(), new DateTime().getMillis(), "user agent")));
         Assert.assertEquals(controller.getEventsReceived().get(), 1);

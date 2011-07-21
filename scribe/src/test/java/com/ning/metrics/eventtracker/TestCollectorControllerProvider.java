@@ -54,7 +54,7 @@ public class TestCollectorControllerProvider
         // Too fast, we won't see anything. The shutdown hook will trigger a flush though
         Assert.assertEquals(((MockCollectorSender) eventSender).getSuccessCount(), 0);
 
-        CollectorControllerProvider.mainEventTrackerShutdownHook(executor, spoolWriter, eventSender, controller);
+        CollectorControllerProvider.mainEventTrackerShutdownHook(eventSender, controller);
 
         Assert.assertFalse(controller.isAcceptEvents());
         Assert.assertTrue(executor.isTerminated());

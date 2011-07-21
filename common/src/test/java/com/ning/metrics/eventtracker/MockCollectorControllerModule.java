@@ -26,6 +26,8 @@ import com.ning.metrics.serialization.writer.SyncType;
 import org.skife.config.ConfigurationObjectFactory;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -46,7 +48,7 @@ public class MockCollectorControllerModule extends AbstractModule
             public AtomicBoolean isShutdown = new AtomicBoolean(false);
 
             @Override
-            public boolean awaitTermination(long timeout, TimeUnit unit) throws InterruptedException
+            public boolean awaitTermination(final long timeout, final TimeUnit unit) throws InterruptedException
             {
                 return true;
             }
@@ -55,6 +57,13 @@ public class MockCollectorControllerModule extends AbstractModule
             public void shutdown()
             {
                 isShutdown.set(true);
+            }
+
+            @Override
+            public List<Runnable> shutdownNow()
+            {
+                isShutdown.set(true);
+                return new ArrayList<Runnable>();
             }
 
             @Override
@@ -76,13 +85,13 @@ public class MockCollectorControllerModule extends AbstractModule
         bind(DiskSpoolEventWriter.class).toInstance(new DiskSpoolEventWriter(new EventHandler()
         {
             @Override
-            public void handle(File file, CallbackHandler handler)
+            public void handle(final File file, final CallbackHandler handler)
             {
                 // Send a dummy event
                 eventSender.send(file, handler);
             }
         }, config.getSpoolDirectoryName(), config.isFlushEnabled(), config.getFlushIntervalInSeconds(), executor,
-            SyncType.valueOf(config.getSyncType()), config.getSyncBatchSize(), config.getRateWindowSizeMinutes()));
+            SyncType.valueOf(config.getSyncType()), config.getSyncBatchSize()));
         bind(EventWriter.class).toProvider(ThresholdEventWriterProvider.class);
     }
 }
