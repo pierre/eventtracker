@@ -99,7 +99,6 @@
                             <createSourcesJar>true</createSourcesJar>
                             <!-- Require to create a reduced pom -->
                             <shadedArtifactAttached>false</shadedArtifactAttached>
-                            <shadedClassifierName>jar-with-dependencies</shadedClassifierName>
                             <artifactSet>
                                 <excludes>
                                     <exclude>com.google.inject:guice</exclude>
