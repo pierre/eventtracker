@@ -31,8 +31,8 @@ public interface EventTrackerConfig
      *
      * @return the type of eventtracker to use
      */
-    @Config(value = "eventtracker.type")
-    @Default(value = "COLLECTOR")
+    @Config("eventtracker.type")
+    @Default("COLLECTOR")
     CollectorControllerModule.Type getType();
 
     //------------------- Spooling -------------------//
@@ -42,8 +42,8 @@ public interface EventTrackerConfig
      *
      * @return the directory path
      */
-    @Config(value = "eventtracker.diskspool.path")
-    @Default(value = ".diskspool")
+    @Config("eventtracker.diskspool.path")
+    @Default(".diskspool")
     String getSpoolDirectoryName();
 
     /**
@@ -51,8 +51,8 @@ public interface EventTrackerConfig
      *
      * @return whether to send events buffered locally
      */
-    @Config(value = "eventtracker.diskspool.enabled")
-    @Default(value = "true")
+    @Config("eventtracker.diskspool.enabled")
+    @Default("true")
     boolean isFlushEnabled();
 
     /**
@@ -60,8 +60,8 @@ public interface EventTrackerConfig
      *
      * @return delay between flushes to the remote server
      */
-    @Config(value = "eventtracker.diskspool.flush-interval-seconds")
-    @Default(value = "60")
+    @Config("eventtracker.diskspool.flush-interval-seconds")
+    @Default("60")
     int getFlushIntervalInSeconds();
 
     /**
@@ -69,8 +69,8 @@ public interface EventTrackerConfig
      *
      * @return the String representation of the SyncType
      */
-    @Config(value = "eventtracker.diskspool.synctype")
-    @Default(value = "NONE")
+    @Config("eventtracker.diskspool.synctype")
+    @Default("NONE")
     String getSyncType();
 
     /**
@@ -79,8 +79,8 @@ public interface EventTrackerConfig
      *
      * @return the batch size for writes
      */
-    @Config(value = "eventtracker.diskspool.batch-size")
-    @Default(value = "50")
+    @Config("eventtracker.diskspool.batch-size")
+    @Default("50")
     int getSyncBatchSize();
 
     /**
@@ -92,20 +92,20 @@ public interface EventTrackerConfig
      * @return the maximum number of events per file
      * @see com.ning.metrics.serialization.writer.ThresholdEventWriter
      */
-    @Config(value = "eventtracker.diskspool.max-uncommitted-write-count")
-    @Default(value = "10000")
+    @Config("eventtracker.diskspool.max-uncommitted-write-count")
+    @Default("10000")
     long getMaxUncommittedWriteCount();
 
     /**
      * Maximum age of events in the file being written (_tmp directory).
      * <p/>
-     * Maxixum number of seconds before events are promoted from the temporary spooling area to the final spool queue.
+     * Maximum number of seconds before events are promoted from the temporary spooling area to the final spool queue.
      *
      * @return maxixmum age of events in seconds in the temporary spool queue
      * @see com.ning.metrics.serialization.writer.ThresholdEventWriter
      */
-    @Config(value = "eventtracker.diskspool.max-uncommitted-period-seconds")
-    @Default(value = "60")
+    @Config("eventtracker.diskspool.max-uncommitted-period-seconds")
+    @Default("60")
     int getMaxUncommittedPeriodInSeconds();
 
     //------------------- HTTP Sender -------------------//
@@ -115,8 +115,8 @@ public interface EventTrackerConfig
      *
      * @return the hostname or IP of the collector host to use
      */
-    @Config(value = "eventtracker.collector.host")
-    @Default(value = "127.0.0.1")
+    @Config("eventtracker.collector.host")
+    @Default("127.0.0.1")
     String getCollectorHost();
 
     /**
@@ -124,8 +124,8 @@ public interface EventTrackerConfig
      *
      * @return the collector port to use
      */
-    @Config(value = "eventtracker.collector.port")
-    @Default(value = "8080")
+    @Config("eventtracker.collector.port")
+    @Default("8080")
     int getCollectorPort();
 
     /**
@@ -133,8 +133,8 @@ public interface EventTrackerConfig
      *
      * @return type of serialization to use (THRIFT, SMILE, JSON)
      */
-    @Config(value = "eventtracker.event-type")
-    @Default(value = "SMILE")
+    @Config("eventtracker.event-type")
+    @Default("SMILE")
     EventType getEventType();
 
     /**
@@ -143,7 +143,7 @@ public interface EventTrackerConfig
      * @return number of milliseconds to wait on shutdown, 8 seconds by default
      */
     @Config("eventtracker.collector.max-wait-time-millis")
-    @Default(value = "8000")
+    @Default("8000")
     long getHttpMaxWaitTimeInMillis();
 
     //------------------- Scribe Sender -------------------//
@@ -153,8 +153,8 @@ public interface EventTrackerConfig
      *
      * @return the hostname or IP of the Scribe host to use
      */
-    @Config(value = "eventtracker.scribe.host")
-    @Default(value = "127.0.0.1")
+    @Config("eventtracker.scribe.host")
+    @Default("127.0.0.1")
     String getScribeHost();
 
     /**
@@ -162,8 +162,8 @@ public interface EventTrackerConfig
      *
      * @return the Scribe port to use
      */
-    @Config(value = "eventtracker.scribe.port")
-    @Default(value = "1463")
+    @Config("eventtracker.scribe.port")
+    @Default("1463")
     int getScribePort();
 
     /**
@@ -172,8 +172,8 @@ public interface EventTrackerConfig
      *
      * @return the threshold before reconnecting to Scribe
      */
-    @Config(value = "eventtracker.scribe.refresh_rate")
-    @Default(value = "1000000")
+    @Config("eventtracker.scribe.refresh_rate")
+    @Default("1000000")
     int getScribeRefreshRate();
 
     /**
@@ -182,7 +182,7 @@ public interface EventTrackerConfig
      *
      * @return the number of minutes before reconnecting to Scribe
      */
-    @Config(value = "eventtracker.scribe.max-idle-minutes")
-    @Default(value = "4")
+    @Config("eventtracker.scribe.max-idle-minutes")
+    @Default("4")
     int getScribeMaxIdleTimeInMinutes();
 }
