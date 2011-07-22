@@ -16,8 +16,6 @@
 
 package com.ning.metrics.eventtracker;
 
-import com.google.inject.AbstractModule;
-import com.google.inject.Inject;
 import com.ning.metrics.serialization.event.EventSerializer;
 import com.ning.metrics.serialization.writer.ObjectOutputEventSerializer;
 import org.slf4j.Logger;
@@ -32,21 +30,15 @@ import org.slf4j.LoggerFactory;
  *
  * @see com.ning.metrics.eventtracker.ScribeCollectorFactory
  */
-public class CollectorControllerScribeModule extends AbstractModule
+public class CollectorControllerScribeModule extends CollectorControllerModule
 {
     private static final Logger log = LoggerFactory.getLogger(CollectorControllerScribeModule.class);
-
-    private final EventTrackerConfig eventTrackerConfig;
-
-    @Inject
-    public CollectorControllerScribeModule(final EventTrackerConfig eventTrackerConfig)
-    {
-        this.eventTrackerConfig = eventTrackerConfig;
-    }
 
     @Override
     protected void configure()
     {
+        super.configure();
+
         bind(EventSerializer.class).to(ObjectOutputEventSerializer.class);
 
         switch (eventTrackerConfig.getType()) {
@@ -61,7 +53,5 @@ public class CollectorControllerScribeModule extends AbstractModule
             default:
                 throw new IllegalStateException("Unknown type " + eventTrackerConfig.getType());
         }
-
-        install(new CollectorControllerModule());
     }
 }
