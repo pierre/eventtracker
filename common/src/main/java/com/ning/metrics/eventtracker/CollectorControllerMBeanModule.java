@@ -37,6 +37,6 @@ class CollectorControllerMBeanModule extends AbstractModule
     protected void configure()
     {
         final ExportBuilder builder = MBeanModule.newExporter(binder());
-        builder.export(CollectorController.class).as("eventtracker:name=CollectorController");
+        builder.export(CollectorController.class).as("com.ning.metrics.eventtracker:name=CollectorController");
     }
 }
