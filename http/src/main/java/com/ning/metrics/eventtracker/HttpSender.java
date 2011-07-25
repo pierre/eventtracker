@@ -22,6 +22,8 @@ import com.ning.http.client.AsyncHttpClientConfig;
 import com.ning.http.client.Request;
 import com.ning.http.client.Response;
 import com.ning.metrics.serialization.writer.CallbackHandler;
+import com.yammer.metrics.Metrics;
+import com.yammer.metrics.core.TimerMetric;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -29,14 +31,16 @@ import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 
-class HttpSender implements EventSender
+public class HttpSender implements EventSender
 {
     private static final Logger log = LoggerFactory.getLogger(HttpSender.class);
     private static final Map<EventType, String> headers = new HashMap<EventType, String>();
 
     private final AtomicLong activeRequests = new AtomicLong(0);
+    private final TimerMetric sendTimer;
 
     static {
         headers.put(EventType.SMILE, "application/json+smile");
@@ -60,6 +64,7 @@ class HttpSender implements EventSender
         this.eventType = eventType;
         this.httpMaxWaitTimeInMillis = httpMaxWaitTimeInMillis;
         collectorURI = String.format("http://%s:%d%s", collectorHost, collectorPort, URI_PATH);
+        sendTimer = Metrics.newTimer(HttpSender.class, collectorURI, TimeUnit.MILLISECONDS, TimeUnit.SECONDS);
         // CAUTION: it is not enforced that the actual event encoding type on the wire matches what the config says it is
         // the event encoding type is determined by the Event's writeExternal() method.
         clientConfig = new AsyncHttpClientConfig.Builder()
@@ -85,6 +90,8 @@ class HttpSender implements EventSender
 
         try {
             log.info("Sending local file to collector: {}", file.getAbsolutePath());
+
+            final long startTime = System.nanoTime();
             client.executeRequest(createPostRequest(file),
                 new AsyncCompletionHandler<Response>()
                 {
@@ -101,6 +108,7 @@ class HttpSender implements EventSender
                                 response.getStatusCode(), response.getStatusText())), file);
                         }
 
+                        sendTimer.update(System.nanoTime() - startTime, TimeUnit.NANOSECONDS);
                         return response; // never read
                     }
 
