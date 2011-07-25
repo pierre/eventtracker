@@ -105,13 +105,7 @@
                                     <exclude>org.skife.config:config-magic</exclude>
                                 </excludes>
                             </artifactSet>
-                            <!-- If you use this shaded jar in your library, use the factory, not the Guice module,
-                              as we relocation jmxutils (the MBean module won't work) -->
                             <relocations>
-                                <relocation>
-                                    <pattern>org.weakref.jmx</pattern>
-                                    <shadedPattern>com.ning.metrics.eventtracker.smile.org.weakref.jmx</shadedPattern>
-                                </relocation>
                                 <relocation>
                                     <pattern>com.ning.http.client</pattern>
                                     <shadedPattern>com.ning.metrics.eventtracker.smile.com.ning.http.client
