@@ -22,6 +22,7 @@ import com.ning.metrics.serialization.smile.SmileEnvelopeEventSerializer;
 import com.ning.metrics.serialization.writer.CallbackHandler;
 import com.ning.metrics.serialization.writer.DiskSpoolEventWriter;
 import com.ning.metrics.serialization.writer.EventHandler;
+import com.ning.metrics.serialization.writer.NoCompressionCodec;
 import com.ning.metrics.serialization.writer.ObjectOutputEventSerializer;
 import com.ning.metrics.serialization.writer.SyncType;
 import com.ning.metrics.serialization.writer.ThresholdEventWriter;
@@ -103,7 +104,7 @@ public class HttpCollectorFactory
                 eventSender.send(file, handler);
             }
         }, spoolDirectoryName, isFlushEnabled, flushIntervalInSeconds, new FailsafeScheduledExecutor(1, "EventtrackerFlusher"),
-            syncType, syncBatchSize, serializer);
+            syncType, syncBatchSize, new NoCompressionCodec(), serializer);
 
         final ThresholdEventWriter thresholdEventWriter = new ThresholdEventWriter(eventWriter, maxUncommittedWriteCount, maxUncommittedPeriodInSeconds);
         controller = new CollectorController(thresholdEventWriter);

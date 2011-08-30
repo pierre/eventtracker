@@ -22,6 +22,7 @@ import com.ning.metrics.serialization.event.EventSerializer;
 import com.ning.metrics.serialization.writer.CallbackHandler;
 import com.ning.metrics.serialization.writer.DiskSpoolEventWriter;
 import com.ning.metrics.serialization.writer.EventHandler;
+import com.ning.metrics.serialization.writer.NoCompressionCodec;
 import com.ning.metrics.serialization.writer.SyncType;
 
 import java.io.File;
@@ -65,6 +66,6 @@ class DiskSpoolEventWriterProvider implements Provider<DiskSpoolEventWriter>
                 eventSender.send(file, handler);
             }
         }, config.getSpoolDirectoryName(), config.isFlushEnabled(), config.getFlushIntervalInSeconds(), executor,
-            SyncType.valueOf(config.getSyncType()), config.getSyncBatchSize(), serializer);
+            SyncType.valueOf(config.getSyncType()), config.getSyncBatchSize(), new NoCompressionCodec(), serializer);
     }
 }

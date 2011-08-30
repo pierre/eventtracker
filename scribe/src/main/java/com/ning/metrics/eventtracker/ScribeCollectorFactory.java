@@ -20,6 +20,7 @@ import com.mogwee.executors.FailsafeScheduledExecutor;
 import com.ning.metrics.serialization.writer.CallbackHandler;
 import com.ning.metrics.serialization.writer.DiskSpoolEventWriter;
 import com.ning.metrics.serialization.writer.EventHandler;
+import com.ning.metrics.serialization.writer.NoCompressionCodec;
 import com.ning.metrics.serialization.writer.ObjectOutputEventSerializer;
 import com.ning.metrics.serialization.writer.SyncType;
 import com.ning.metrics.serialization.writer.ThresholdEventWriter;
@@ -92,7 +93,7 @@ public class ScribeCollectorFactory
                 eventSender.send(file, handler);
             }
         }, spoolDirectoryName, isFlushEnabled, flushIntervalInSeconds, new FailsafeScheduledExecutor(1, "EventtrackerFlusher"),
-            syncType, syncBatchSize, new ObjectOutputEventSerializer());
+            syncType, syncBatchSize, new NoCompressionCodec(), new ObjectOutputEventSerializer());
 
         final ThresholdEventWriter thresholdEventWriter = new ThresholdEventWriter(eventWriter, maxUncommittedWriteCount, maxUncommittedPeriodInSeconds);
         controller = new CollectorController(thresholdEventWriter);
