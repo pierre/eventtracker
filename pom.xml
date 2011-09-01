@@ -25,7 +25,7 @@
     <groupId>com.ning</groupId>
     <artifactId>metrics.eventtracker</artifactId>
     <packaging>pom</packaging>
-    <version>4.0.1-SNAPSHOT</version>
+    <version>4.0.1</version>
     <name>eventtracker</name>
     <description>Library to send events to collectors</description>
     <url>http://github.com/pierre/eventtracker</url>
