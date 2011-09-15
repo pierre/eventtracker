@@ -90,7 +90,6 @@
             <plugin>
                 <groupId>com.ning.maven.plugins</groupId>
                 <artifactId>maven-duplicate-finder-plugin</artifactId>
-                <version>1.0.0</version>
                 <configuration>
                     <failBuildInCaseOfConflict>true</failBuildInCaseOfConflict>
                     <!-- That's for Jetty -->
