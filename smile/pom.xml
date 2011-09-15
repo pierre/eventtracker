@@ -106,8 +106,8 @@
                             </artifactSet>
                             <relocations>
                                 <relocation>
-                                    <pattern>com.ning.http.client</pattern>
-                                    <shadedPattern>com.ning.metrics.eventtracker.smile.com.ning.http.client
+                                    <pattern>com.ning.http</pattern>
+                                    <shadedPattern>com.ning.metrics.eventtracker.smile.com.ning.http
                                     </shadedPattern>
                                 </relocation>
                                 <relocation>
