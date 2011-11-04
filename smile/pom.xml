@@ -99,11 +99,25 @@
                             <!-- Require to create a reduced pom -->
                             <shadedArtifactAttached>false</shadedArtifactAttached>
                             <artifactSet>
-                                <excludes>
-                                    <exclude>com.google.inject:guice</exclude>
-                                    <exclude>org.skife.config:config-magic</exclude>
-                                </excludes>
+                                <includes>
+                                    <include>commons-io:commons-io</include>
+                                    <include>com.ning:async-http-client</include>
+                                    <include>com.ning:metrics.eventtracker-common</include>
+                                    <include>com.ning:metrics.eventtracker-http</include>
+                                    <include>joda-time:joda-time</include>
+                                    <include>org.codehaus.jackson:*</include>
+                                    <include>org.jboss.netty:*</include>
+                                </includes>
                             </artifactSet>
+                            <filters>
+                                <filter>
+                                    <artifact>*:*</artifact>
+                                    <excludes>
+                                        <exclude>META-INF/COPYRIGHT.txt</exclude>
+                                        <exclude>META-INF/jboss-beans.xml</exclude>
+                                    </excludes>
+                                </filter>
+                            </filters>
                             <relocations>
                                 <relocation>
                                     <pattern>com.ning.http</pattern>
