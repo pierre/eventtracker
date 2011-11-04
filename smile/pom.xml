@@ -46,6 +46,10 @@
         </dependency>
         <dependency>
             <groupId>com.ning</groupId>
+            <artifactId>metrics.serialization-smile</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.ning</groupId>
             <artifactId>metrics.serialization-writer</artifactId>
         </dependency>
         <dependency>
