@@ -101,6 +101,7 @@
                                     <include>com.ning:metrics.eventtracker-common</include>
                                     <include>com.ning:metrics.eventtracker-http</include>
                                     <!-- Make sure to shade Jackson in SmileEnvelopeEvent -->
+                                    <include>com.ning:metrics.serialization-common</include>
                                     <include>com.ning:metrics.serialization-smile</include>
                                     <include>joda-time:joda-time</include>
                                     <include>org.codehaus.jackson:*</include>
@@ -120,6 +121,11 @@
                                 <relocation>
                                     <pattern>com.ning.http</pattern>
                                     <shadedPattern>com.ning.metrics.eventtracker.smile.com.ning.http
+                                    </shadedPattern>
+                                </relocation>
+                                <relocation><!-- Relocate the serialization library for cores using SmileEnvelopeEvent directly -->
+                                    <pattern>com.ning.metrics.serialization</pattern>
+                                    <shadedPattern>com.ning.metrics.eventtracker.smile.com.ning.metrics.serialization
                                     </shadedPattern>
                                 </relocation>
                                 <relocation>
