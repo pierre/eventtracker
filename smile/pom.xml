@@ -100,9 +100,10 @@
                                     <include>com.ning:async-http-client</include>
                                     <include>com.ning:metrics.eventtracker-common</include>
                                     <include>com.ning:metrics.eventtracker-http</include>
-                                    <!-- Make sure to shade Jackson in SmileEnvelopeEvent -->
+                                    <!-- Make sure to shade Jackson in SmileEnvelopeEvent and the whole serialization library -->
                                     <include>com.ning:metrics.serialization-common</include>
                                     <include>com.ning:metrics.serialization-smile</include>
+                                    <include>com.ning:metrics.serialization-writer</include>
                                     <include>joda-time:joda-time</include>
                                     <include>org.codehaus.jackson:*</include>
                                     <include>org.jboss.netty:*</include>
