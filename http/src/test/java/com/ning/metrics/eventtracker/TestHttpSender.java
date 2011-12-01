@@ -47,7 +47,10 @@ public class TestHttpSender
     private Server server;
     private Server errorServer;
     private HttpSender sender;
+
+    @SuppressWarnings("unused")
     private CallbackHandler failureCallbackHandler;
+    @SuppressWarnings("unused")
     private CallbackHandler successCallbackHandler;
 
     @BeforeClass(alwaysRun = true)
@@ -80,7 +83,8 @@ public class TestHttpSender
         System.setProperty("eventtracker.collector.port", Integer.toString(port));
         EventTrackerConfig config = new ConfigurationObjectFactory(System.getProperties()).build(EventTrackerConfig.class);
         // Set up sender
-        sender = new HttpSender(config.getCollectorHost(), config.getCollectorPort(), config.getEventType(), config.getHttpMaxWaitTimeInMillis());
+        sender = new HttpSender(config.getCollectorHost(), config.getCollectorPort(), config.getEventType(),
+                config.getHttpMaxWaitTimeInMillis(), config.getHttpMaxKeepAlive().getMillis());
         failureCallbackHandler = new CallbackHandler()
         {
             @Override
