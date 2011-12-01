@@ -54,15 +54,26 @@ public class HttpSender implements EventSender
 
     private final EventType eventType;
     private final long httpMaxWaitTimeInMillis;
+    private final long httpMaxKeepAliveInMillis;
     private final String collectorURI;
     private final AsyncHttpClientConfig clientConfig;
 
     private AsyncHttpClient client;
 
-    public HttpSender(final String collectorHost, final int collectorPort, final EventType eventType, final long httpMaxWaitTimeInMillis)
+    /**
+     * Timer used for ensuring we close persistent HTTP connections every now
+     * and then.
+     */
+    private final ExpirationTimer httpConnectionExpiration;
+
+    public HttpSender(final String collectorHost, final int collectorPort, final EventType eventType,
+            final long httpMaxWaitTimeInMillis,
+            final long httpMaxKeepAliveInMillis)
     {
         this.eventType = eventType;
         this.httpMaxWaitTimeInMillis = httpMaxWaitTimeInMillis;
+        this.httpMaxKeepAliveInMillis = httpMaxKeepAliveInMillis;
+        httpConnectionExpiration = new ExpirationTimer(httpMaxKeepAliveInMillis);
         collectorURI = String.format("http://%s:%d%s", collectorHost, collectorPort, URI_PATH);
         sendTimer = Metrics.newTimer(HttpSender.class, collectorURI, TimeUnit.MILLISECONDS, TimeUnit.SECONDS);
         // CAUTION: it is not enforced that the actual event encoding type on the wire matches what the config says it is
@@ -70,7 +81,7 @@ public class HttpSender implements EventSender
         clientConfig = new AsyncHttpClientConfig.Builder()
             .setIdleConnectionInPoolTimeoutInMs(DEFAULT_IDLE_CONNECTION_IN_POOL_TIMEOUT_IN_MS)
             .setConnectionTimeoutInMs(100)
-            .setMaximumConnectionsPerHost(-1) // unlimited connections
+            .setMaximumConnectionsPerHost(-1) // unlimited connections            
             .build();
     }
 
@@ -88,11 +99,16 @@ public class HttpSender implements EventSender
             client = new AsyncHttpClient(clientConfig);
         }
 
+        log.info("Sending local file to collector: {}", file.getAbsolutePath());
+        final long startTime = System.nanoTime();
+        /* Need to ensure we won't be using a single connection indefinitely,
+         * to ensure load balancing works.
+         */
+        final boolean needToClose = httpConnectionExpiration.isExpired(System.currentTimeMillis());
+        final Request request = createPostRequest(file, needToClose);
+        
         try {
-            log.info("Sending local file to collector: {}", file.getAbsolutePath());
-
-            final long startTime = System.nanoTime();
-            client.executeRequest(createPostRequest(file),
+            client.executeRequest(request,
                 new AsyncCompletionHandler<Response>()
                 {
                     @Override
@@ -119,7 +135,6 @@ public class HttpSender implements EventSender
                         handler.onError(t, file);
                     }
                 });
-
             activeRequests.incrementAndGet();
         }
         catch (IOException e) {
@@ -158,11 +173,14 @@ public class HttpSender implements EventSender
         }
     }
 
-    private Request createPostRequest(final File file)
+    private Request createPostRequest(final File file, final boolean needToClose)
     {
-        final AsyncHttpClient.BoundRequestBuilder requestBuilder = client
+        AsyncHttpClient.BoundRequestBuilder requestBuilder = client
             .preparePost(collectorURI).setBody(file)
             .setHeader("Content-Type", headers.get(eventType)); // zero-bytes-copy
+        if (needToClose) {
+            requestBuilder = requestBuilder.setHeader("Connection", "close");
+        }
         return requestBuilder.build();
     }
 }

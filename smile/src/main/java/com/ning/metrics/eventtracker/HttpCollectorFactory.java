@@ -37,11 +37,13 @@ public class HttpCollectorFactory
     private final CollectorController controller;
     private static HttpSender eventSender;
 
+    // Factory method for tests cases
     public static synchronized CollectorController createHttpController(
         final String collectorHost,
         final int collectorPort,
         final EventType eventType,
         final long httpMaxWaitTimeInMillis,
+        final long httpMaxKeepAliveInMillis,
         final String spoolDirectoryName,
         final boolean isFlushEnabled,
         final int flushIntervalInSeconds,
@@ -57,6 +59,7 @@ public class HttpCollectorFactory
                 collectorPort,
                 eventType,
                 httpMaxWaitTimeInMillis,
+                httpMaxKeepAliveInMillis,
                 spoolDirectoryName,
                 isFlushEnabled,
                 flushIntervalInSeconds,
@@ -75,6 +78,7 @@ public class HttpCollectorFactory
         final int collectorPort,
         final EventType eventType,
         final long httpMaxWaitTimeInMillis,
+        final long httpMaxKeepAliveInMillis,
         final String spoolDirectoryName,
         final boolean isFlushEnabled,
         final int flushIntervalInSeconds,
@@ -84,7 +88,8 @@ public class HttpCollectorFactory
         final int maxUncommittedPeriodInSeconds
     )
     {
-        eventSender = new HttpSender(collectorHost, collectorPort, eventType, httpMaxWaitTimeInMillis);
+        eventSender = new HttpSender(collectorHost, collectorPort, eventType,
+                httpMaxWaitTimeInMillis, httpMaxKeepAliveInMillis);
 
         EventSerializer serializer = new ObjectOutputEventSerializer();
         switch (eventType) {

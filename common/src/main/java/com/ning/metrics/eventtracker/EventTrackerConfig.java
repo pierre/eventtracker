@@ -18,6 +18,7 @@ package com.ning.metrics.eventtracker;
 
 import org.skife.config.Config;
 import org.skife.config.Default;
+import org.skife.config.TimeSpan;
 
 public interface EventTrackerConfig
 {
@@ -185,4 +186,13 @@ public interface EventTrackerConfig
     @Config("eventtracker.scribe.max-idle-minutes")
     @Default("4")
     int getScribeMaxIdleTimeInMinutes();
+
+    /**
+     * How long can we keep on using the same HTTP persistent connection?
+     * Default is 2 minutes, to balance efficiency (longer) and load-balancing
+     * (shorter) constraints.
+     */
+    @Config("eventtracker.http.connection.maxKeepAlive")
+    @Default("120s")
+    TimeSpan getHttpMaxKeepAlive();
 }

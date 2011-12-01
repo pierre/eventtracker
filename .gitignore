@@ -3,6 +3,9 @@
 *.ipr
 *.iws
 target/
+.classpath
+.project
+.settings
 release.properties
 pom.xml.releaseBackup
 deploy.sh
