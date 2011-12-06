@@ -45,6 +45,7 @@ public class TestHttpSmileIntegration
         }
     }
 
+    @SuppressWarnings("unused")
     @BeforeTest(alwaysRun = true)
     private void setupTmpDir()
     {
@@ -57,6 +58,7 @@ public class TestHttpSmileIntegration
         }
     }
 
+    @SuppressWarnings("unused")
     @AfterTest(alwaysRun = true)
     private void cleanupTmpDir()
     {
@@ -71,6 +73,7 @@ public class TestHttpSmileIntegration
             8080,
             EventType.SMILE,
             8000,
+            60000, // keep-alive
             tmpDir.getAbsolutePath(),
             true,
             10,

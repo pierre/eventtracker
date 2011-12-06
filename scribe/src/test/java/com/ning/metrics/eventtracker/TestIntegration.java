@@ -35,7 +35,7 @@ public class TestIntegration
 {
     private final File tmpDir = new File(System.getProperty("java.io.tmpdir"), "collector");
 
-
+    @SuppressWarnings("unused")
     @BeforeTest(alwaysRun = true)
     private void setupTmpDir()
     {
@@ -48,6 +48,7 @@ public class TestIntegration
         }
     }
 
+    @SuppressWarnings("unused")
     @AfterTest(alwaysRun = true)
     private void cleanupTmpDir()
     {
