@@ -19,7 +19,7 @@
     <parent>
         <groupId>com.ning</groupId>
         <artifactId>metrics.base-pom</artifactId>
-        <version>0.0.4</version>
+        <version>0.0.17</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.ning</groupId>
