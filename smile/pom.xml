@@ -92,9 +92,18 @@
                         <configuration>
                             <createDependencyReducedPom>true</createDependencyReducedPom>
                             <createSourcesJar>true</createSourcesJar>
+                            <promoteTransitiveDependencies>true</promoteTransitiveDependencies>
                             <!-- Require to create a reduced pom -->
                             <shadedArtifactAttached>false</shadedArtifactAttached>
                             <artifactSet>
+                                <excludes>
+                                    <exclude>com.google.inject:guice</exclude>
+                                    <exclude>com.mogwee:mogwee-executors</exclude>
+                                    <exclude>com.yammer.metrics:metrics-core</exclude>
+                                    <exclude>javax.inject:javax.inject</exclude>
+                                    <exclude>org.skife.config:config-magic</exclude>
+                                    <exclude>org.weakref:jmxutils</exclude>
+                                </excludes>
                                 <includes>
                                     <include>commons-io:commons-io</include>
                                     <include>com.ning:async-http-client</include>
@@ -105,7 +114,7 @@
                                     <include>com.ning:metrics.serialization-smile</include>
                                     <include>com.ning:metrics.serialization-writer</include>
                                     <include>joda-time:joda-time</include>
-                                    <include>org.codehaus.jackson:*</include>
+                                    <include>com.fasterxml.jackson.*:*</include>
                                     <include>org.jboss.netty:*</include>
                                 </includes>
                             </artifactSet>
@@ -135,8 +144,8 @@
                                     </shadedPattern>
                                 </relocation>
                                 <relocation>
-                                    <pattern>org.codehaus.jackson</pattern>
-                                    <shadedPattern>com.ning.metrics.eventtracker.smile.org.codehaus.jackson
+                                    <pattern>com.fasterxml.jackson</pattern>
+                                    <shadedPattern>com.ning.metrics.eventtracker.smile.com.fasterxml.jackson
                                     </shadedPattern>
                                 </relocation>
                                 <relocation>
