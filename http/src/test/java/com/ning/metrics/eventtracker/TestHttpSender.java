@@ -15,16 +15,14 @@
  */
 package com.ning.metrics.eventtracker;
 
-import com.ning.metrics.serialization.event.Event;
-import com.ning.metrics.serialization.event.Granularity;
 import com.ning.metrics.serialization.writer.CallbackHandler;
+
+import org.eclipse.jetty.server.AbstractHttpConnection;
 import org.eclipse.jetty.server.Connector;
-import org.eclipse.jetty.server.HttpConnection;
 import org.eclipse.jetty.server.Request;
 import org.eclipse.jetty.server.Response;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.nio.SelectChannelConnector;
-import org.joda.time.DateTime;
 import org.skife.config.ConfigurationObjectFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -35,14 +33,14 @@ import org.testng.annotations.Test;
 
 import javax.servlet.ServletException;
 import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
-import java.io.ObjectInput;
-import java.io.ObjectOutput;
 import java.net.ServerSocket;
 
 public class TestHttpSender
 {
     private final static Logger logger = LoggerFactory.getLogger(TestHttpSender.class);
+    private static final File eventsFile = new File(System.getProperty("java.io.tmpdir"), "TestHttpSender-" + System.currentTimeMillis());
 
     private Server server;
     private Server errorServer;
@@ -59,16 +57,13 @@ public class TestHttpSender
         final int port = findFreePort();
 
         // Set up server
-        server = new Server();
-        Connector listener = new SelectChannelConnector();
-        listener.setHost("127.0.0.1");
-        listener.setPort(port);
-        server.addConnector(listener);
+        server = new Server(port);
 
         // Set up server that will return 404
-        errorServer = new Server()
+        errorServer = new Server(port)
         {
-            public void handle(HttpConnection connection) throws IOException, ServletException
+            @Override
+            public void handle(AbstractHttpConnection connection) throws IOException, ServletException
             {
                 final String target = connection.getRequest().getPathInfo();
                 final Request request = connection.getRequest();
@@ -78,13 +73,12 @@ public class TestHttpSender
                 handle(target, request, request, response);
             }
         };
-        errorServer.addConnector(listener);
 
         System.setProperty("eventtracker.collector.port", Integer.toString(port));
         EventTrackerConfig config = new ConfigurationObjectFactory(System.getProperties()).build(EventTrackerConfig.class);
         // Set up sender
         sender = new HttpSender(config.getCollectorHost(), config.getCollectorPort(), config.getEventType(),
-                config.getHttpMaxWaitTimeInMillis(), config.getHttpMaxKeepAlive().getMillis());
+                                config.getHttpMaxWaitTimeInMillis(), config.getHttpMaxKeepAlive().getMillis());
         failureCallbackHandler = new CallbackHandler()
         {
             @Override
@@ -113,6 +107,12 @@ public class TestHttpSender
                 logger.debug("Got success. Yay.");
             }
         };
+
+        // Populate the file
+        Assert.assertTrue(eventsFile.createNewFile());
+        final FileWriter writer = new FileWriter(eventsFile);
+        writer.write("{ \"eventName\":\"Hello\", \"payload\": { \"dontcare\": \"World\" } }");
+        writer.close();
     }
 
     @AfterClass(alwaysRun = true)
@@ -121,29 +121,29 @@ public class TestHttpSender
         sender.close();
     }
 
-    @Test
+    @Test(groups = "slow")
     public void testSend() throws Exception
     {
         // test send before server's initialized. hope for timeout failure
         logger.info("sending");
-//        sender.send(new DummyEvent(), failureCallbackHandler);
+        sender.send(eventsFile, failureCallbackHandler);
         Thread.sleep((long) 100); // 100 is long enough for it to timeout
 
         // initialize server and test again.
         server.start();
         logger.info("Started server");
         logger.info("sending");
-//        sender.send(new DummyEvent(), successCallbackHandler);
+        sender.send(eventsFile, successCallbackHandler);
         Thread.sleep((long) 500);
         server.stop();
     }
 
-    @Test
+    @Test(groups = "slow")
     public void test404() throws Exception
     {
         errorServer.start();
         logger.info("sending");
-//        sender.send(new DummyEvent(), failureCallbackHandler);
+        sender.send(eventsFile, failureCallbackHandler);
         Thread.sleep((long) 500);
         errorServer.stop();
     }
@@ -161,64 +161,6 @@ public class TestHttpSender
             if (socket != null) {
                 socket.close();
             }
-        }
-    }
-
-    public class DummyEvent implements Event
-    {
-
-        @Override
-        public DateTime getEventDateTime()
-        {
-            return null;
-        }
-
-        @Override
-        public String getName()
-        {
-            return "dummy";
-        }
-
-        @Override
-        public Granularity getGranularity()
-        {
-            return null;
-        }
-
-        @Override
-        public String getVersion()
-        {
-            return null;
-        }
-
-        @Override
-        public String getOutputDir(String prefix)
-        {
-            return null;
-        }
-
-        @Override
-        public Object getData()
-        {
-            return null;
-        }
-
-        @Override
-        public byte[] getSerializedEvent()
-        {
-            return new byte[0];  //To change body of implemented methods use File | Settings | File Templates.
-        }
-
-        @Override
-        public void writeExternal(ObjectOutput objectOutput) throws IOException
-        {
-            logger.debug("writing external");
-        }
-
-        @Override
-        public void readExternal(ObjectInput objectInput) throws IOException, ClassNotFoundException
-        {
-            logger.debug("reading external");
         }
     }
 }

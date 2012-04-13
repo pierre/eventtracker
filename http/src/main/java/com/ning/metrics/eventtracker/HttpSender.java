@@ -22,8 +22,9 @@ import com.ning.http.client.AsyncHttpClientConfig;
 import com.ning.http.client.Request;
 import com.ning.http.client.Response;
 import com.ning.metrics.serialization.writer.CallbackHandler;
+
 import com.yammer.metrics.Metrics;
-import com.yammer.metrics.core.TimerMetric;
+import com.yammer.metrics.core.Timer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -40,7 +41,7 @@ public class HttpSender implements EventSender
     private static final Map<EventType, String> headers = new HashMap<EventType, String>();
 
     private final AtomicLong activeRequests = new AtomicLong(0);
-    private final TimerMetric sendTimer;
+    private final Timer sendTimer;
 
     static {
         headers.put(EventType.SMILE, "application/json+smile");
@@ -54,7 +55,6 @@ public class HttpSender implements EventSender
 
     private final EventType eventType;
     private final long httpMaxWaitTimeInMillis;
-    private final long httpMaxKeepAliveInMillis;
     private final String collectorURI;
     private final AsyncHttpClientConfig clientConfig;
 
@@ -67,22 +67,20 @@ public class HttpSender implements EventSender
     private final ExpirationTimer httpConnectionExpiration;
 
     public HttpSender(final String collectorHost, final int collectorPort, final EventType eventType,
-            final long httpMaxWaitTimeInMillis,
-            final long httpMaxKeepAliveInMillis)
+                      final long httpMaxWaitTimeInMillis, final long httpMaxKeepAliveInMillis)
     {
         this.eventType = eventType;
         this.httpMaxWaitTimeInMillis = httpMaxWaitTimeInMillis;
-        this.httpMaxKeepAliveInMillis = httpMaxKeepAliveInMillis;
         httpConnectionExpiration = new ExpirationTimer(httpMaxKeepAliveInMillis);
         collectorURI = String.format("http://%s:%d%s", collectorHost, collectorPort, URI_PATH);
-        sendTimer = Metrics.newTimer(HttpSender.class, collectorURI, TimeUnit.MILLISECONDS, TimeUnit.SECONDS);
+        sendTimer = Metrics.newTimer(HttpSender.class, collectorURI.replace(":", "_"), TimeUnit.MILLISECONDS, TimeUnit.SECONDS);
         // CAUTION: it is not enforced that the actual event encoding type on the wire matches what the config says it is
         // the event encoding type is determined by the Event's writeExternal() method.
         clientConfig = new AsyncHttpClientConfig.Builder()
-            .setIdleConnectionInPoolTimeoutInMs(DEFAULT_IDLE_CONNECTION_IN_POOL_TIMEOUT_IN_MS)
-            .setConnectionTimeoutInMs(100)
-            .setMaximumConnectionsPerHost(-1) // unlimited connections            
-            .build();
+                .setIdleConnectionInPoolTimeoutInMs(DEFAULT_IDLE_CONNECTION_IN_POOL_TIMEOUT_IN_MS)
+                .setConnectionTimeoutInMs(100)
+                .setMaximumConnectionsPerHost(-1) // unlimited connections
+                .build();
     }
 
     /**
@@ -176,8 +174,8 @@ public class HttpSender implements EventSender
     private Request createPostRequest(final File file, final boolean needToClose)
     {
         AsyncHttpClient.BoundRequestBuilder requestBuilder = client
-            .preparePost(collectorURI).setBody(file)
-            .setHeader("Content-Type", headers.get(eventType)); // zero-bytes-copy
+                .preparePost(collectorURI).setBody(file)
+                .setHeader("Content-Type", headers.get(eventType)); // zero-bytes-copy
         if (needToClose) {
             requestBuilder = requestBuilder.setHeader("Connection", "close");
         }

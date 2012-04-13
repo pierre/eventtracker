@@ -16,10 +16,10 @@
 
 package com.ning.metrics.eventtracker;
 
+import com.ning.metrics.serialization.event.Granularity;
 import com.ning.metrics.serialization.event.SmileEnvelopeEvent;
 import com.ning.metrics.serialization.writer.SyncType;
-import org.codehaus.jackson.JsonNode;
-import org.codehaus.jackson.map.ObjectMapper;
+
 import org.testng.Assert;
 import org.testng.annotations.AfterTest;
 import org.testng.annotations.BeforeTest;
@@ -31,7 +31,6 @@ import java.io.File;
 public class TestHttpSmileIntegration
 {
     private final File tmpDir = new File(System.getProperty("java.io.tmpdir"), "collector");
-    private static final ObjectMapper mapper = new ObjectMapper();
 
     class SomeEvent
     {
@@ -89,7 +88,7 @@ public class TestHttpSmileIntegration
     private void fireSmileEvents(final CollectorController controller) throws Exception
     {
         final SomeEvent event = new SomeEvent(System.currentTimeMillis(), "bar");
-        controller.offerEvent(new SmileEnvelopeEvent("TestEvent", mapper.<JsonNode>valueToTree(event)));
+        controller.offerEvent(SmileEnvelopeEvent.fromPOJO("TestEvent", Granularity.DAILY, event));
         Assert.assertEquals(controller.getEventsReceived().get(), 1);
         Assert.assertEquals(controller.getEventsLost().get(), 0);
         controller.commit();

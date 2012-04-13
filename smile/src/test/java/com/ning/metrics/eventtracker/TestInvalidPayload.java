@@ -23,10 +23,11 @@ import com.ning.metrics.serialization.writer.DiskSpoolEventWriter;
 import com.ning.metrics.serialization.writer.EventHandler;
 import com.ning.metrics.serialization.writer.NoCompressionCodec;
 import com.ning.metrics.serialization.writer.SyncType;
-import org.codehaus.jackson.map.JsonMappingException;
-import org.codehaus.jackson.smile.SmileFactory;
-import org.codehaus.jackson.smile.SmileGenerator;
-import org.codehaus.jackson.smile.SmileParser;
+
+import com.fasterxml.jackson.databind.JsonMappingException;
+import com.fasterxml.jackson.dataformat.smile.SmileFactory;
+import com.fasterxml.jackson.dataformat.smile.SmileGenerator;
+import com.fasterxml.jackson.dataformat.smile.SmileParser;
 import org.joda.time.DateTime;
 import org.testng.Assert;
 import org.testng.annotations.AfterMethod;
