@@ -19,7 +19,6 @@ package com.ning.metrics.eventtracker;
 import com.mogwee.executors.FailsafeScheduledExecutor;
 import com.yammer.metrics.Metrics;
 import com.yammer.metrics.core.Counter;
-import org.weakref.jmx.Managed;
 
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ExecutorService;
@@ -67,14 +66,12 @@ public class LocalQueueAndWorkers
         }
     }
 
-    @Managed(description = "Number of pending jobs")
-    public int queueSize()
+    int queueSize()
     {
         return queue.size();
     }
 
-    @Managed(description = "Whether the workers are shut down")
-    public boolean isShutdown()
+    boolean isShutdown()
     {
         return executor.isShutdown();
     }
