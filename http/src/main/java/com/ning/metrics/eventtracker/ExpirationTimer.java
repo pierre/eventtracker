@@ -34,18 +34,20 @@ public class ExpirationTimer
      */
     private long expirationTime = 0L;
 
-    public ExpirationTimer(long max) {
+    public ExpirationTimer(final long max)
+    {
         maxKeepAliveMsecs = max;
     }
 
-    public final boolean isExpired() {
+    public final boolean isExpired()
+    {
         return isExpired(System.currentTimeMillis());
     }
 
-    public synchronized boolean isExpired(long now)
+    public synchronized boolean isExpired(final long now)
     {
         if (expirationTime == 0L) { // just starting, set start time, no expiry
-            expirationTime = now  + maxKeepAliveMsecs;
+            expirationTime = now + maxKeepAliveMsecs;
             return false;
         }
         if (now >= maxKeepAliveMsecs) { // yup, expired

@@ -79,7 +79,8 @@ public class TestHttpSmileIntegration
             SyncType.NONE,
             10,
             10,
-            10
+            10,
+            50
         );
 
         fireSmileEvents(controller);

@@ -50,7 +50,8 @@ public class HttpCollectorFactory
         final SyncType syncType,
         final int syncBatchSize,
         final long maxUncommittedWriteCount,
-        final int maxUncommittedPeriodInSeconds
+        final int maxUncommittedPeriodInSeconds,
+        final int httpWorkersPoolSize
     ) throws IOException
     {
         if (singletonController == null) {
@@ -66,7 +67,8 @@ public class HttpCollectorFactory
                 syncType,
                 syncBatchSize,
                 maxUncommittedWriteCount,
-                maxUncommittedPeriodInSeconds
+                maxUncommittedPeriodInSeconds,
+                httpWorkersPoolSize
             ).get();
         }
 
@@ -85,11 +87,12 @@ public class HttpCollectorFactory
         final SyncType syncType,
         final int syncBatchSize,
         final long maxUncommittedWriteCount,
-        final int maxUncommittedPeriodInSeconds
+        final int maxUncommittedPeriodInSeconds,
+        final int httpWorkersPoolSize
     )
     {
         eventSender = new HttpSender(collectorHost, collectorPort, eventType,
-                httpMaxWaitTimeInMillis, httpMaxKeepAliveInMillis);
+                httpMaxWaitTimeInMillis, httpMaxKeepAliveInMillis, httpWorkersPoolSize);
 
         EventSerializer serializer = new ObjectOutputEventSerializer();
         switch (eventType) {

@@ -18,6 +18,7 @@ package com.ning.metrics.eventtracker;
 
 import org.skife.config.Config;
 import org.skife.config.Default;
+import org.skife.config.Description;
 import org.skife.config.TimeSpan;
 
 public interface EventTrackerConfig
@@ -195,4 +196,9 @@ public interface EventTrackerConfig
     @Config("eventtracker.http.connection.maxKeepAlive")
     @Default("120s")
     TimeSpan getHttpMaxKeepAlive();
+
+    @Config("eventtracker.http.connection.workersPoolSize")
+    @Description("Maximum number of concurrent file uploads to the collector")
+    @Default("50")
+    int getHttpWorkersPoolSize();
 }

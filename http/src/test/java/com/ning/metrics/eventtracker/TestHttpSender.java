@@ -39,7 +39,7 @@ import java.net.ServerSocket;
 
 public class TestHttpSender
 {
-    private final static Logger logger = LoggerFactory.getLogger(TestHttpSender.class);
+    private static final Logger logger = LoggerFactory.getLogger(TestHttpSender.class);
     private static final File eventsFile = new File(System.getProperty("java.io.tmpdir"), "TestHttpSender-" + System.currentTimeMillis());
 
     private Server server;
@@ -63,7 +63,7 @@ public class TestHttpSender
         errorServer = new Server(port)
         {
             @Override
-            public void handle(AbstractHttpConnection connection) throws IOException, ServletException
+            public void handle(final AbstractHttpConnection connection) throws IOException, ServletException
             {
                 final String target = connection.getRequest().getPathInfo();
                 final Request request = connection.getRequest();
@@ -75,20 +75,20 @@ public class TestHttpSender
         };
 
         System.setProperty("eventtracker.collector.port", Integer.toString(port));
-        EventTrackerConfig config = new ConfigurationObjectFactory(System.getProperties()).build(EventTrackerConfig.class);
+        final EventTrackerConfig config = new ConfigurationObjectFactory(System.getProperties()).build(EventTrackerConfig.class);
         // Set up sender
         sender = new HttpSender(config.getCollectorHost(), config.getCollectorPort(), config.getEventType(),
-                                config.getHttpMaxWaitTimeInMillis(), config.getHttpMaxKeepAlive().getMillis());
+                                config.getHttpMaxWaitTimeInMillis(), config.getHttpMaxKeepAlive().getMillis(), 10);
         failureCallbackHandler = new CallbackHandler()
         {
             @Override
-            public void onError(Throwable t, File event)
+            public void onError(final Throwable t, final File event)
             {
                 logger.debug("Got error (good): " + t.getMessage());
             }
 
             @Override
-            public void onSuccess(File event)
+            public void onSuccess(final File event)
             {
                 Assert.fail("Got success when we were expecting failure. Uh oh.");
             }
@@ -96,13 +96,13 @@ public class TestHttpSender
         successCallbackHandler = new CallbackHandler()
         {
             @Override
-            public void onError(Throwable t, File event)
+            public void onError(final Throwable t, final File event)
             {
                 Assert.fail("Got error (bad!): ", t);
             }
 
             @Override
-            public void onSuccess(File event)
+            public void onSuccess(final File event)
             {
                 logger.debug("Got success. Yay.");
             }

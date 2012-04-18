@@ -42,7 +42,8 @@ public class CollectorControllerHttpModule extends CollectorControllerModule
                     eventTrackerConfig.getCollectorPort(),
                     eventTrackerConfig.getEventType(),
                     eventTrackerConfig.getHttpMaxWaitTimeInMillis(),
-                    eventTrackerConfig.getHttpMaxKeepAlive().getMillis()
+                    eventTrackerConfig.getHttpMaxKeepAlive().getMillis(),
+                    eventTrackerConfig.getHttpWorkersPoolSize()
                 );
                 bind(EventSender.class).toInstance(httpSender);
                 log.info("Enabled HTTP Event Logging");
