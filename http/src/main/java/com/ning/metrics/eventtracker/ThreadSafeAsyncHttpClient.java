@@ -96,7 +96,9 @@ public class ThreadSafeAsyncHttpClient
     public synchronized void close()
     {
         isClosed.set(true);
-        client.close();
+        if (client != null) {
+            client.close();
+        }
     }
 
     synchronized AsyncHttpClient createClient()
